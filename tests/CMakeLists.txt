@@ -6,11 +6,11 @@ option(ESPRESSIO_ENABLE_SANITIZERS "Enable address and undefined-behavior saniti
 
 add_executable(espressio_observable_tests test_observable.cpp)
 target_include_directories(espressio_observable_tests PRIVATE ../src)
-target_compile_features(espressio_observable_tests PRIVATE cxx_std_14)
+target_compile_features(espressio_observable_tests PRIVATE cxx_std_17)
 
 add_executable(espressio_observable_no_rtti_tests test_observable_no_rtti.cpp)
 target_include_directories(espressio_observable_no_rtti_tests PRIVATE ../src)
-target_compile_features(espressio_observable_no_rtti_tests PRIVATE cxx_std_14)
+target_compile_features(espressio_observable_no_rtti_tests PRIVATE cxx_std_17)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(espressio_observable_tests PRIVATE
