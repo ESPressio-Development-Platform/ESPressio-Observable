@@ -7,15 +7,12 @@ namespace Observable {
 
 using ObserverTypeKey = const void*;
 
-namespace Detail {
-    template<typename T>
-    inline constexpr unsigned char ObserverTypeToken = 0;
-}
-
 template<typename T>
-constexpr ObserverTypeKey ObserverTypeKeyOf() noexcept {
-    using Normalized = std::remove_cv_t<std::remove_reference_t<T>>;
-    return static_cast<ObserverTypeKey>(&Detail::ObserverTypeToken<Normalized>);
+ObserverTypeKey ObserverTypeKeyOf() noexcept {
+    using WithoutReference = typename std::remove_reference<T>::type;
+    using Normalized = typename std::remove_cv<WithoutReference>::type;
+    static const unsigned char token = 0;
+    return static_cast<ObserverTypeKey>(&token);
 }
 
 } // namespace Observable
