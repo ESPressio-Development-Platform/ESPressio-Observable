@@ -102,6 +102,43 @@ private:
         (void)unused;
     }
 
+    template<typename... TInterfaces>
+    bool HasSameInterfaceSet(IObserverHandle* handle) const {
+        const ObserverTypeKey requested[] = {
+            ObserverTypeKeyOf<TInterfaces>()...
+        };
+
+        std::size_t uniqueRequested = 0;
+        for (std::size_t index = 0; index < sizeof...(TInterfaces); ++index) {
+            bool seen = false;
+            for (std::size_t earlier = 0; earlier < index; ++earlier) {
+                if (requested[earlier] == requested[index]) {
+                    seen = true;
+                    break;
+                }
+            }
+            if (!seen) ++uniqueRequested;
+        }
+
+        std::size_t existing = 0;
+        for (const auto& binding : _bindings) {
+            if (binding.Handle == handle && binding.Type != nullptr) ++existing;
+        }
+        if (existing != uniqueRequested) return false;
+
+        for (std::size_t index = 0; index < sizeof...(TInterfaces); ++index) {
+            bool found = false;
+            for (const auto& binding : _bindings) {
+                if (binding.Handle == handle && binding.Type == requested[index]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+        return true;
+    }
+
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAsImpl(
         TObserver*,
@@ -130,7 +167,10 @@ private:
                 registration.Handle != nullptr &&
                 (registration.Identity == identity || registration.Observer == observerBase)
             ) {
-                throw DuplicateObserverRegistrationException();
+                if (HasSameInterfaceSet<ObserverInterfaces...>(registration.Handle)) {
+                    throw DuplicateObserverRegistrationException();
+                }
+                throw ObserverRegistrationConflictException();
             }
         }
 
