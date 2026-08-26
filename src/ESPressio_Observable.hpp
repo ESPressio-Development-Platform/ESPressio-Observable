@@ -15,6 +15,22 @@
 namespace ESPressio {
 namespace Observable {
 
+namespace Detail {
+    template<typename TObserver, typename... TInterfaces>
+    struct AllObserverInterfacesConvertible;
+
+    template<typename TObserver>
+    struct AllObserverInterfacesConvertible<TObserver> : std::true_type {};
+
+    template<typename TObserver, typename TInterface, typename... TRest>
+    struct AllObserverInterfacesConvertible<TObserver, TInterface, TRest...>
+        : std::integral_constant<
+            bool,
+            std::is_convertible<TObserver*, TInterface*>::value &&
+            AllObserverInterfacesConvertible<TObserver, TRest...>::value
+        > {};
+}
+
 /// Non-thread-safe Observable with explicit compiler-backed typed registration.
 /// Typed registrations and dispatch require no RTTI. When RTTI is enabled, a
 /// compatibility fallback keeps legacy untyped registrations working while
@@ -22,15 +38,27 @@ namespace Observable {
 class Observable : public IUntypedObservable {
 private:
     struct Registration {
-        IObserverHandle* Handle = nullptr;
-        IObserver* Observer = nullptr;
-        const void* Identity = nullptr;
+        IObserverHandle* Handle;
+        IObserver* Observer;
+        const void* Identity;
+
+        Registration(
+            IObserverHandle* handle = nullptr,
+            IObserver* observer = nullptr,
+            const void* identity = nullptr
+        ) : Handle(handle), Observer(observer), Identity(identity) {}
     };
 
     struct Binding {
-        IObserverHandle* Handle = nullptr;
-        ObserverTypeKey Type = nullptr;
-        void* Interface = nullptr;
+        IObserverHandle* Handle;
+        ObserverTypeKey Type;
+        void* Interface;
+
+        Binding(
+            IObserverHandle* handle = nullptr,
+            ObserverTypeKey type = nullptr,
+            void* observerInterface = nullptr
+        ) : Handle(handle), Type(type), Interface(observerInterface) {}
     };
 
     std::vector<Registration> _registrations;
@@ -39,16 +67,51 @@ private:
     bool _needsCompaction = false;
 
     template<typename TFirstInterface, typename TObserver>
+    static IObserver* ResolveObserverBaseImpl(
+        TObserver* observer,
+        std::true_type
+    ) {
+        return static_cast<IObserver*>(
+            static_cast<TFirstInterface*>(observer)
+        );
+    }
+
+    template<typename TFirstInterface, typename TObserver>
+    static IObserver* ResolveObserverBaseImpl(
+        TObserver* observer,
+        std::false_type
+    ) {
+        static_assert(
+            std::is_convertible<TObserver*, IObserver*>::value,
+            "Observer must expose an unambiguous IObserver base when the first registered interface does not derive from IObserver"
+        );
+        return static_cast<IObserver*>(observer);
+    }
+
+    template<typename TFirstInterface, typename TObserver>
     static IObserver* ResolveObserverBase(TObserver* observer) {
-        if constexpr (std::is_base_of_v<IObserver, TFirstInterface>) {
-            return static_cast<IObserver*>(static_cast<TFirstInterface*>(observer));
-        } else {
-            static_assert(
-                std::is_convertible_v<TObserver*, IObserver*>,
-                "Observer must expose an unambiguous IObserver base when the first registered interface does not derive from IObserver"
-            );
-            return static_cast<IObserver*>(observer);
-        }
+        return ResolveObserverBaseImpl<TFirstInterface>(
+            observer,
+            typename std::is_base_of<IObserver, TFirstInterface>::type()
+        );
+    }
+
+    template<typename TInterface, typename TObserver>
+    void AddBinding(ObserverHandle* handle, TObserver* observer) {
+        _bindings.push_back(Binding(
+            handle,
+            ObserverTypeKeyOf<TInterface>(),
+            static_cast<void*>(static_cast<TInterface*>(observer))
+        ));
+    }
+
+    template<typename TObserver, typename... TInterfaces>
+    void AddBindings(ObserverHandle* handle, TObserver* observer) {
+        const int unused[] = {
+            0,
+            (AddBinding<TInterfaces>(handle, observer), 0)...
+        };
+        (void)unused;
     }
 
     void Compact() {
@@ -161,9 +224,6 @@ private:
             }
 
 #if defined(__GXX_RTTI) || defined(_CPPRTTI)
-            // Migration-only compatibility: untyped legacy registrations have no
-            // compiler-established binding. If RTTI exists, preserve their old
-            // cross-cast behavior without making RTTI a build requirement.
             for (std::size_t registrationIndex = 0;
                  registrationIndex < registrationCount;
                  ++registrationIndex) {
@@ -185,9 +245,8 @@ private:
                 }
                 if (hasTypedBinding) continue;
 
-                if (auto* typed = dynamic_cast<ObserverType*>(registration.Observer)) {
-                    callback(typed);
-                }
+                ObserverType* typed = dynamic_cast<ObserverType*>(registration.Observer);
+                if (typed != nullptr) callback(typed);
             }
 #endif
         } catch (...) {
@@ -250,16 +309,20 @@ public:
             "At least one Observer interface must be specified"
         );
         static_assert(
-            (std::is_convertible_v<TObserver*, ObserverInterfaces*> && ...),
+            Detail::AllObserverInterfacesConvertible<
+                TObserver,
+                ObserverInterfaces...
+            >::value,
             "Observer does not implement every requested Observer interface"
         );
 
         if (observer == nullptr) throw InvalidObserverRegistrationException();
 
-        using FirstInterface = std::tuple_element_t<
+        typedef typename std::tuple_element<
             0,
             std::tuple<ObserverInterfaces...>
-        >;
+        >::type FirstInterface;
+
         IObserver* observerBase = ResolveObserverBase<FirstInterface>(observer);
         const void* identity = static_cast<const void*>(observer);
 
@@ -279,17 +342,10 @@ public:
             new ObserverHandle(GetLifetimeControl(), observerBase)
         );
         ObserverHandle* rawHandle = handle.get();
-        _registrations.push_back(Registration{rawHandle, observerBase, identity});
+        _registrations.push_back(Registration(rawHandle, observerBase, identity));
 
         try {
-            (
-                _bindings.push_back(Binding{
-                    rawHandle,
-                    ObserverTypeKeyOf<ObserverInterfaces>(),
-                    static_cast<void*>(static_cast<ObserverInterfaces*>(observer))
-                }),
-                ...
-            );
+            AddBindings<TObserver, ObserverInterfaces...>(rawHandle, observer);
         } catch (...) {
             RemoveHandle(rawHandle, false);
             throw;
