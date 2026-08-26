@@ -207,9 +207,9 @@ namespace {
         catch (const InvalidObserverRegistrationException&) { nullThrown = true; }
         assert(nullThrown);
 
-        ObserverHandlePtr handleA = observable->RegisterObserver(&observerA);
+        ObserverHandlePtr handleA = observable->RegisterObserverAs<InterfaceA>(&observerA);
         bool duplicateThrown = false;
-        try { observable->RegisterObserver(&observerA); }
+        try { observable->RegisterObserverAs<InterfaceA>(&observerA); }
         catch (const DuplicateObserverRegistrationException&) { duplicateThrown = true; }
         assert(duplicateThrown);
         ObserverHandlePtr plainHandle = observable->RegisterObserver(&plain);
@@ -309,7 +309,7 @@ namespace {
     void TestRetainedNotificationContext() {
         auto observable = std::make_shared<TestObservable>();
         ObserverA observer;
-        ObserverHandlePtr handle = observable->RegisterObserver(&observer);
+        ObserverHandlePtr handle = observable->RegisterObserverAs<InterfaceA>(&observer);
         std::weak_ptr<TestObservable> weakObservable = observable;
         std::function<void(int)> deferred = observable->DeferredNotifyA();
         observable.reset();
@@ -372,7 +372,7 @@ namespace {
         auto observable = std::make_shared<TestThreadSafeObservable>();
         ObserverA observerA;
         PlainObserver plain;
-        ObserverHandlePtr handleA = observable->RegisterObserver(&observerA);
+        ObserverHandlePtr handleA = observable->RegisterObserverAs<InterfaceA>(&observerA);
         ObserverHandlePtr plainHandle = observable->RegisterObserver(&plain);
         observable->NotifyA(73);
         assert(observerA.calls == 1 && observerA.value == 73);
@@ -415,7 +415,7 @@ namespace {
     void TestThreadSafeStress() {
         auto observable = std::make_shared<TestThreadSafeObservable>();
         ObserverA observer;
-        ObserverHandlePtr handle = observable->RegisterObserver(&observer);
+        ObserverHandlePtr handle = observable->RegisterObserverAs<InterfaceA>(&observer);
         std::atomic<bool> stop{false};
 
         std::thread notifier([&]() {
@@ -525,7 +525,7 @@ namespace {
         {
             auto observable = std::make_shared<TestObservable>();
             SelfRemovingObserver observer;
-            ObserverHandlePtr handle = observable->RegisterObserver(&observer);
+            ObserverHandlePtr handle = observable->RegisterObserverAs<InterfaceA>(&observer);
             observer.handle = &handle;
             observable->NotifyA(1);
             observable->NotifyA(2);
