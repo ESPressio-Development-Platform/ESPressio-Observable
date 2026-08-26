@@ -43,6 +43,13 @@ public:
         return handle;
     }
 
+    /// Register the observer for its static interface type. This is compile-time
+    /// typed registration; no runtime type discovery or RTTI is performed.
+    template<typename TObserver>
+    ObserverHandlePtr RegisterObserver(TObserver* observer) {
+        return RegisterObserverAs<TObserver>(observer);
+    }
+
     ObserverHandlePtr RegisterObserver(IObserver* observer) override {
         return RegisterObserverAs<IObserver>(observer);
     }
