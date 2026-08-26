@@ -1,20 +1,308 @@
 #pragma once
 
+#include <algorithm>
+#include <memory>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "ESPressio_Observable.hpp"
+#include "ESPressio_ObserverTypeKey.hpp"
 
 namespace ESPressio {
 namespace Observable {
 
-/// Compatibility name for the typed-registration Observable implementation.
-///
-/// The former implementation maintained an unordered_map of RTTI type_index
-/// keys and per-type vectors. Observable now stores a compact flat binding table
-/// keyed by ObserverTypeKey, so a separate bucket container would only duplicate
-/// storage and allocation overhead.
-class ObservableWithBuckets : public Observable {
+/// Typed-only Observable implementation. Unlike Observable, this type does not
+/// advertise IUntypedObservable registration. It uses a compact flat binding
+/// table instead of RTTI type_index hash buckets.
+class ObservableWithBuckets : public IObservable {
+private:
+    struct Registration {
+        IObserverHandle* Handle;
+        IObserver* Observer;
+        const void* Identity;
+
+        Registration(
+            IObserverHandle* handle = nullptr,
+            IObserver* observer = nullptr,
+            const void* identity = nullptr
+        ) : Handle(handle), Observer(observer), Identity(identity) {}
+    };
+
+    struct Binding {
+        IObserverHandle* Handle;
+        ObserverTypeKey Type;
+        void* Interface;
+
+        Binding(
+            IObserverHandle* handle = nullptr,
+            ObserverTypeKey type = nullptr,
+            void* observerInterface = nullptr
+        ) : Handle(handle), Type(type), Interface(observerInterface) {}
+    };
+
+    std::vector<Registration> _registrations;
+    std::vector<Binding> _bindings;
+    std::size_t _notificationDepth = 0;
+    bool _needsCompaction = false;
+
+    template<typename TFirstInterface, typename TObserver>
+    static IObserver* ResolveObserverBaseImpl(
+        TObserver* observer,
+        std::true_type
+    ) {
+        return static_cast<IObserver*>(
+            static_cast<TFirstInterface*>(observer)
+        );
+    }
+
+    template<typename TFirstInterface, typename TObserver>
+    static IObserver* ResolveObserverBaseImpl(
+        TObserver* observer,
+        std::false_type
+    ) {
+        static_assert(
+            std::is_convertible<TObserver*, IObserver*>::value,
+            "Observer must expose an unambiguous IObserver base when the first registered interface does not derive from IObserver"
+        );
+        return static_cast<IObserver*>(observer);
+    }
+
+    template<typename TFirstInterface, typename TObserver>
+    static IObserver* ResolveObserverBase(TObserver* observer) {
+        return ResolveObserverBaseImpl<TFirstInterface>(
+            observer,
+            typename std::is_base_of<IObserver, TFirstInterface>::type()
+        );
+    }
+
+    template<typename TInterface, typename TObserver>
+    void AddBinding(ObserverHandle* handle, TObserver* observer) {
+        _bindings.push_back(Binding(
+            handle,
+            ObserverTypeKeyOf<TInterface>(),
+            static_cast<void*>(static_cast<TInterface*>(observer))
+        ));
+    }
+
+    template<typename TObserver, typename... TInterfaces>
+    void AddBindings(ObserverHandle* handle, TObserver* observer) {
+        const int unused[] = {
+            0,
+            (AddBinding<TInterfaces>(handle, observer), 0)...
+        };
+        (void)unused;
+    }
+
+    void Compact() {
+        _registrations.erase(
+            std::remove_if(
+                _registrations.begin(),
+                _registrations.end(),
+                [](const Registration& registration) {
+                    return registration.Handle == nullptr;
+                }
+            ),
+            _registrations.end()
+        );
+        _bindings.erase(
+            std::remove_if(
+                _bindings.begin(),
+                _bindings.end(),
+                [](const Binding& binding) {
+                    return binding.Handle == nullptr;
+                }
+            ),
+            _bindings.end()
+        );
+        _needsCompaction = false;
+    }
+
+    void FinishNotification() {
+        if (--_notificationDepth == 0 && _needsCompaction) Compact();
+    }
+
+    void RemoveHandle(IObserverHandle* handle, bool invalidate) {
+        if (handle == nullptr) return;
+        if (invalidate) static_cast<ObserverHandle*>(handle)->InvalidateRegistration();
+
+        if (_notificationDepth > 0) {
+            for (auto& registration : _registrations) {
+                if (registration.Handle == handle) {
+                    registration.Handle = nullptr;
+                    registration.Observer = nullptr;
+                    registration.Identity = nullptr;
+                }
+            }
+            for (auto& binding : _bindings) {
+                if (binding.Handle == handle) {
+                    binding.Handle = nullptr;
+                    binding.Type = nullptr;
+                    binding.Interface = nullptr;
+                }
+            }
+            _needsCompaction = true;
+            return;
+        }
+
+        _registrations.erase(
+            std::remove_if(
+                _registrations.begin(),
+                _registrations.end(),
+                [handle](const Registration& registration) {
+                    return registration.Handle == handle;
+                }
+            ),
+            _registrations.end()
+        );
+        _bindings.erase(
+            std::remove_if(
+                _bindings.begin(),
+                _bindings.end(),
+                [handle](const Binding& binding) {
+                    return binding.Handle == handle;
+                }
+            ),
+            _bindings.end()
+        );
+    }
+
+    template<typename ObserverType, typename Callback>
+    void WithObserversTyped(Callback&& callback) {
+        const ObserverTypeKey type = ObserverTypeKeyOf<ObserverType>();
+        ++_notificationDepth;
+        const std::size_t count = _bindings.size();
+        try {
+            for (std::size_t index = 0; index < count; ++index) {
+                const Binding& binding = _bindings[index];
+                if (
+                    binding.Handle != nullptr &&
+                    binding.Interface != nullptr &&
+                    binding.Type == type
+                ) {
+                    callback(static_cast<ObserverType*>(binding.Interface));
+                }
+            }
+        } catch (...) {
+            FinishNotification();
+            throw;
+        }
+        FinishNotification();
+    }
+
+protected:
+    class NotificationContext {
+    private:
+        friend class ObservableWithBuckets;
+        ObservableWithBuckets& _observable;
+        std::shared_ptr<IObservable> _notificationLifetime;
+
+        NotificationContext(
+            ObservableWithBuckets& observable,
+            std::shared_ptr<IObservable> notificationLifetime
+        ) : _observable(observable),
+            _notificationLifetime(std::move(notificationLifetime)) {}
+
+    public:
+        template<typename ObserverType, typename Callback>
+        void WithObservers(Callback&& callback) {
+            _observable.template WithObserversTyped<ObserverType>(
+                std::forward<Callback>(callback)
+            );
+        }
+    };
+
+    template<typename Operation>
+    void ExecuteNotification(Operation&& operation) {
+        if (_registrations.empty()) return;
+        NotificationContext context(*this, AcquireNotificationLifetime());
+        operation(context);
+    }
+
 public:
-    using Observable::RegisterObserver;
-    using Observable::RegisterObserverAs;
+    ~ObservableWithBuckets() override {
+        BeginObservableDestruction();
+        for (const auto& registration : _registrations) {
+            if (registration.Handle != nullptr) {
+                static_cast<ObserverHandle*>(registration.Handle)->InvalidateRegistration();
+            }
+        }
+        _bindings.clear();
+        _registrations.clear();
+    }
+
+    template<typename... ObserverInterfaces, typename TObserver>
+    ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
+        static_assert(
+            sizeof...(ObserverInterfaces) > 0,
+            "At least one Observer interface must be specified"
+        );
+        static_assert(
+            Detail::AllObserverInterfacesConvertible<
+                TObserver,
+                ObserverInterfaces...
+            >::value,
+            "Observer does not implement every requested Observer interface"
+        );
+
+        if (observer == nullptr) throw InvalidObserverRegistrationException();
+
+        typedef typename std::tuple_element<
+            0,
+            std::tuple<ObserverInterfaces...>
+        >::type FirstInterface;
+
+        IObserver* observerBase = ResolveObserverBase<FirstInterface>(observer);
+        const void* identity = static_cast<const void*>(observer);
+
+        for (const auto& registration : _registrations) {
+            if (
+                registration.Handle != nullptr &&
+                (registration.Identity == identity || registration.Observer == observerBase)
+            ) {
+                throw DuplicateObserverRegistrationException();
+            }
+        }
+
+        _registrations.reserve(_registrations.size() + 1);
+        _bindings.reserve(_bindings.size() + sizeof...(ObserverInterfaces));
+
+        std::unique_ptr<ObserverHandle> handle(
+            new ObserverHandle(GetLifetimeControl(), observerBase)
+        );
+        ObserverHandle* rawHandle = handle.get();
+        _registrations.push_back(Registration(rawHandle, observerBase, identity));
+
+        try {
+            AddBindings<TObserver, ObserverInterfaces...>(rawHandle, observer);
+        } catch (...) {
+            RemoveHandle(rawHandle, false);
+            throw;
+        }
+
+        return ObserverHandlePtr(handle.release());
+    }
+
+    void UnregisterObserver(IObserver* observer) override {
+        if (observer == nullptr) return;
+        for (const auto& registration : _registrations) {
+            if (registration.Handle != nullptr && registration.Observer == observer) {
+                RemoveHandle(registration.Handle, true);
+                return;
+            }
+        }
+    }
+
+    bool IsObserverRegistered(IObserver* observer) override {
+        if (observer == nullptr) return false;
+        for (const auto& registration : _registrations) {
+            if (registration.Handle != nullptr && registration.Observer == observer) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 } // namespace Observable
