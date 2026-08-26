@@ -21,7 +21,8 @@ private:
 protected:
     template<class Operation>
     void ExecuteNotification(Operation&& operation) {
-        if (_observerCount.load(std::memory_order_acquire) == 0) return;
+        // Observable::ExecuteNotification owns the shared-lifetime validation.
+        // Do not bypass it merely because the observer count is zero.
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         Observable::ExecuteNotification(std::forward<Operation>(operation));
     }
