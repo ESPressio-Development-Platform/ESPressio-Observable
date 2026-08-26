@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <tuple>
 #include <type_traits>
@@ -93,6 +94,57 @@ private:
             (AddBinding<TInterfaces>(handle, observer), 0)...
         };
         (void)unused;
+    }
+
+    template<typename... ObserverInterfaces, typename TObserver>
+    ObserverHandlePtr RegisterObserverAsImpl(
+        TObserver*,
+        std::false_type
+    ) {
+        throw ObserverInterfaceMismatchException();
+    }
+
+    template<typename... ObserverInterfaces, typename TObserver>
+    ObserverHandlePtr RegisterObserverAsImpl(
+        TObserver* observer,
+        std::true_type
+    ) {
+        if (observer == nullptr) throw InvalidObserverRegistrationException();
+
+        typedef typename std::tuple_element<
+            0,
+            std::tuple<ObserverInterfaces...>
+        >::type FirstInterface;
+
+        IObserver* observerBase = ResolveObserverBase<FirstInterface>(observer);
+        const void* identity = static_cast<const void*>(observer);
+
+        for (const auto& registration : _registrations) {
+            if (
+                registration.Handle != nullptr &&
+                (registration.Identity == identity || registration.Observer == observerBase)
+            ) {
+                throw DuplicateObserverRegistrationException();
+            }
+        }
+
+        _registrations.reserve(_registrations.size() + 1);
+        _bindings.reserve(_bindings.size() + sizeof...(ObserverInterfaces));
+
+        std::unique_ptr<ObserverHandle> handle(
+            new ObserverHandle(GetLifetimeControl(), observerBase)
+        );
+        ObserverHandle* rawHandle = handle.get();
+        _registrations.push_back(Registration(rawHandle, observerBase, identity));
+
+        try {
+            AddBindings<TObserver, ObserverInterfaces...>(rawHandle, observer);
+        } catch (...) {
+            RemoveHandle(rawHandle, false);
+            throw;
+        }
+
+        return ObserverHandlePtr(handle.release());
     }
 
     void Compact() {
@@ -232,56 +284,29 @@ public:
         _registrations.clear();
     }
 
+    template<typename... ObserverInterfaces>
+    ObserverHandlePtr RegisterObserverAs(std::nullptr_t) {
+        static_assert(
+            sizeof...(ObserverInterfaces) > 0,
+            "At least one Observer interface must be specified"
+        );
+        throw InvalidObserverRegistrationException();
+    }
+
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
         static_assert(
             sizeof...(ObserverInterfaces) > 0,
             "At least one Observer interface must be specified"
         );
-        static_assert(
-            Detail::AllObserverInterfacesConvertible<
+
+        return RegisterObserverAsImpl<ObserverInterfaces...>(
+            observer,
+            typename Detail::AllObserverInterfacesConvertible<
                 TObserver,
                 ObserverInterfaces...
-            >::value,
-            "Observer does not implement every requested Observer interface"
+            >::type()
         );
-
-        if (observer == nullptr) throw InvalidObserverRegistrationException();
-
-        typedef typename std::tuple_element<
-            0,
-            std::tuple<ObserverInterfaces...>
-        >::type FirstInterface;
-
-        IObserver* observerBase = ResolveObserverBase<FirstInterface>(observer);
-        const void* identity = static_cast<const void*>(observer);
-
-        for (const auto& registration : _registrations) {
-            if (
-                registration.Handle != nullptr &&
-                (registration.Identity == identity || registration.Observer == observerBase)
-            ) {
-                throw DuplicateObserverRegistrationException();
-            }
-        }
-
-        _registrations.reserve(_registrations.size() + 1);
-        _bindings.reserve(_bindings.size() + sizeof...(ObserverInterfaces));
-
-        std::unique_ptr<ObserverHandle> handle(
-            new ObserverHandle(GetLifetimeControl(), observerBase)
-        );
-        ObserverHandle* rawHandle = handle.get();
-        _registrations.push_back(Registration(rawHandle, observerBase, identity));
-
-        try {
-            AddBindings<TObserver, ObserverInterfaces...>(rawHandle, observer);
-        } catch (...) {
-            RemoveHandle(rawHandle, false);
-            throw;
-        }
-
-        return ObserverHandlePtr(handle.release());
     }
 
     void UnregisterObserver(IObserver* observer) override {
