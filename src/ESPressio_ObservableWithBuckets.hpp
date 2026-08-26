@@ -267,8 +267,9 @@ protected:
 
     template<typename Operation>
     void ExecuteNotification(Operation&& operation) {
+        std::shared_ptr<IObservable> lifetime = AcquireNotificationLifetime();
         if (_registrations.empty()) return;
-        NotificationContext context(*this, AcquireNotificationLifetime());
+        NotificationContext context(*this, std::move(lifetime));
         operation(context);
     }
 
