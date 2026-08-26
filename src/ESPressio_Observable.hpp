@@ -98,9 +98,15 @@ private:
 
     template<typename TInterface, typename TObserver>
     void AddBinding(ObserverHandle* handle, TObserver* observer) {
+        const ObserverTypeKey type = ObserverTypeKeyOf<TInterface>();
+        for (const auto& binding : _bindings) {
+            if (binding.Handle == handle && binding.Type == type) {
+                return;
+            }
+        }
         _bindings.push_back(Binding(
             handle,
-            ObserverTypeKeyOf<TInterface>(),
+            type,
             static_cast<void*>(static_cast<TInterface*>(observer))
         ));
     }
@@ -285,10 +291,6 @@ protected:
 
     template<class Operation>
     void ExecuteNotification(Operation&& operation) {
-        // The shared ownership requirement is part of the notification contract,
-        // even when no observers are currently registered. Acquire the lifetime
-        // token before taking the empty-registry fast path so unmanaged stack
-        // Observables still fail deterministically instead of bypassing validation.
         std::shared_ptr<IObservable> lifetime = AcquireNotificationLifetime();
         if (_registrations.empty()) return;
         NotificationContext context(*this, std::move(lifetime));
