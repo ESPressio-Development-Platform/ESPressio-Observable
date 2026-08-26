@@ -80,9 +80,15 @@ private:
 
     template<typename TInterface, typename TObserver>
     void AddBinding(ObserverHandle* handle, TObserver* observer) {
+        const ObserverTypeKey type = ObserverTypeKeyOf<TInterface>();
+        for (const auto& binding : _bindings) {
+            if (binding.Handle == handle && binding.Type == type) {
+                return;
+            }
+        }
         _bindings.push_back(Binding(
             handle,
-            ObserverTypeKeyOf<TInterface>(),
+            type,
             static_cast<void*>(static_cast<TInterface*>(observer))
         ));
     }
