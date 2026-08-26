@@ -16,7 +16,9 @@ namespace ESPressio {
 namespace Observable {
 
 /// Non-thread-safe Observable with explicit compiler-backed typed registration.
-/// Typed dispatch performs no RTTI and no dynamic casts.
+/// Typed registrations and dispatch require no RTTI. When RTTI is enabled, a
+/// compatibility fallback keeps legacy untyped registrations working while
+/// downstream libraries migrate to RegisterObserverAs<...>().
 class Observable : public IUntypedObservable {
 private:
     struct Registration {
@@ -39,9 +41,7 @@ private:
     template<typename TFirstInterface, typename TObserver>
     static IObserver* ResolveObserverBase(TObserver* observer) {
         if constexpr (std::is_base_of_v<IObserver, TFirstInterface>) {
-            return static_cast<IObserver*>(
-                static_cast<TFirstInterface*>(observer)
-            );
+            return static_cast<IObserver*>(static_cast<TFirstInterface*>(observer));
         } else {
             static_assert(
                 std::is_convertible_v<TObserver*, IObserver*>,
@@ -76,16 +76,12 @@ private:
     }
 
     void FinishNotification() {
-        if (--_notificationDepth == 0 && _needsCompaction) {
-            Compact();
-        }
+        if (--_notificationDepth == 0 && _needsCompaction) Compact();
     }
 
     void RemoveHandle(IObserverHandle* handle, bool invalidate) {
         if (handle == nullptr) return;
-        if (invalidate) {
-            static_cast<ObserverHandle*>(handle)->InvalidateRegistration();
-        }
+        if (invalidate) static_cast<ObserverHandle*>(handle)->InvalidateRegistration();
 
         if (_notificationDepth > 0) {
             for (auto& registration : _registrations) {
@@ -150,9 +146,10 @@ private:
     void WithObserversTyped(Callback&& callback) {
         const ObserverTypeKey type = ObserverTypeKeyOf<ObserverType>();
         ++_notificationDepth;
-        const std::size_t count = _bindings.size();
+        const std::size_t bindingCount = _bindings.size();
+        const std::size_t registrationCount = _registrations.size();
         try {
-            for (std::size_t index = 0; index < count; ++index) {
+            for (std::size_t index = 0; index < bindingCount; ++index) {
                 const Binding& binding = _bindings[index];
                 if (
                     binding.Handle != nullptr &&
@@ -162,6 +159,37 @@ private:
                     callback(static_cast<ObserverType*>(binding.Interface));
                 }
             }
+
+#if defined(__GXX_RTTI) || defined(_CPPRTTI)
+            // Migration-only compatibility: untyped legacy registrations have no
+            // compiler-established binding. If RTTI exists, preserve their old
+            // cross-cast behavior without making RTTI a build requirement.
+            for (std::size_t registrationIndex = 0;
+                 registrationIndex < registrationCount;
+                 ++registrationIndex) {
+                const Registration& registration = _registrations[registrationIndex];
+                if (registration.Handle == nullptr || registration.Observer == nullptr) continue;
+
+                bool hasTypedBinding = false;
+                for (std::size_t bindingIndex = 0;
+                     bindingIndex < bindingCount;
+                     ++bindingIndex) {
+                    const Binding& binding = _bindings[bindingIndex];
+                    if (
+                        binding.Handle == registration.Handle &&
+                        binding.Type == type
+                    ) {
+                        hasTypedBinding = true;
+                        break;
+                    }
+                }
+                if (hasTypedBinding) continue;
+
+                if (auto* typed = dynamic_cast<ObserverType*>(registration.Observer)) {
+                    callback(typed);
+                }
+            }
+#endif
         } catch (...) {
             FinishNotification();
             throw;
@@ -226,9 +254,7 @@ public:
             "Observer does not implement every requested Observer interface"
         );
 
-        if (observer == nullptr) {
-            throw InvalidObserverRegistrationException();
-        }
+        if (observer == nullptr) throw InvalidObserverRegistrationException();
 
         using FirstInterface = std::tuple_element_t<
             0,
@@ -279,10 +305,7 @@ public:
     void UnregisterObserver(IObserver* observer) override {
         if (observer == nullptr) return;
         for (const auto& registration : _registrations) {
-            if (
-                registration.Handle != nullptr &&
-                registration.Observer == observer
-            ) {
+            if (registration.Handle != nullptr && registration.Observer == observer) {
                 RemoveHandle(registration.Handle, true);
                 return;
             }
@@ -292,10 +315,7 @@ public:
     bool IsObserverRegistered(IObserver* observer) override {
         if (observer == nullptr) return false;
         for (const auto& registration : _registrations) {
-            if (
-                registration.Handle != nullptr &&
-                registration.Observer == observer
-            ) {
+            if (registration.Handle != nullptr && registration.Observer == observer) {
                 return true;
             }
         }
