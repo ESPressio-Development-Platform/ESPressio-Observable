@@ -32,9 +32,8 @@ namespace Detail {
 }
 
 /// Non-thread-safe Observable with explicit compiler-backed typed registration.
-/// Typed registrations and dispatch require no RTTI. When RTTI is enabled, a
-/// compatibility fallback keeps legacy untyped registrations working while
-/// downstream libraries migrate to RegisterObserverAs<...>().
+/// Typed registrations and dispatch require no RTTI. Observers consumed through
+/// a typed notification contract must be registered explicitly for that contract.
 class Observable : public IUntypedObservable {
 private:
     struct Registration {
@@ -227,34 +226,6 @@ private:
                     callback(static_cast<ObserverType*>(binding.Interface));
                 }
             }
-
-#if defined(__GXX_RTTI) || defined(_CPPRTTI)
-            const std::size_t registrationCount = _registrations.size();
-            for (std::size_t registrationIndex = 0;
-                 registrationIndex < registrationCount;
-                 ++registrationIndex) {
-                const Registration& registration = _registrations[registrationIndex];
-                if (registration.Handle == nullptr || registration.Observer == nullptr) continue;
-
-                bool hasTypedBinding = false;
-                for (std::size_t bindingIndex = 0;
-                     bindingIndex < bindingCount;
-                     ++bindingIndex) {
-                    const Binding& binding = _bindings[bindingIndex];
-                    if (
-                        binding.Handle == registration.Handle &&
-                        binding.Type == type
-                    ) {
-                        hasTypedBinding = true;
-                        break;
-                    }
-                }
-                if (hasTypedBinding) continue;
-
-                ObserverType* typed = dynamic_cast<ObserverType*>(registration.Observer);
-                if (typed != nullptr) callback(typed);
-            }
-#endif
         } catch (...) {
             FinishNotification();
             throw;
