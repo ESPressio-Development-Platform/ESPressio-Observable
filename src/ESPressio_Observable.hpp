@@ -285,8 +285,13 @@ protected:
 
     template<class Operation>
     void ExecuteNotification(Operation&& operation) {
+        // The shared ownership requirement is part of the notification contract,
+        // even when no observers are currently registered. Acquire the lifetime
+        // token before taking the empty-registry fast path so unmanaged stack
+        // Observables still fail deterministically instead of bypassing validation.
+        std::shared_ptr<IObservable> lifetime = AcquireNotificationLifetime();
         if (_registrations.empty()) return;
-        NotificationContext context(*this, AcquireNotificationLifetime());
+        NotificationContext context(*this, std::move(lifetime));
         operation(context);
     }
 
