@@ -210,7 +210,6 @@ private:
         const ObserverTypeKey type = ObserverTypeKeyOf<ObserverType>();
         ++_notificationDepth;
         const std::size_t bindingCount = _bindings.size();
-        const std::size_t registrationCount = _registrations.size();
         try {
             for (std::size_t index = 0; index < bindingCount; ++index) {
                 const Binding& binding = _bindings[index];
@@ -224,6 +223,7 @@ private:
             }
 
 #if defined(__GXX_RTTI) || defined(_CPPRTTI)
+            const std::size_t registrationCount = _registrations.size();
             for (std::size_t registrationIndex = 0;
                  registrationIndex < registrationCount;
                  ++registrationIndex) {
