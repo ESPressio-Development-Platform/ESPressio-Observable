@@ -16,5 +16,11 @@
     "license": "Apache-2.0",
     "frameworks": "*",
     "platforms": "*",
-    "dependencies": []
+    "dependencies": [
+        {
+            "name": "ESPressio-System",
+            "version": "https://github.com/ESPressio-Development-Platform/ESPressio-System.git#feature/1-system-memory-policy",
+            "platforms": "*"
+        }
+    ]
 }
