@@ -8,3 +8,4 @@
 - **#17** Added class-specific external-preferred allocation for `ObserverHandle` without changing the public `ObserverHandlePtr` API.
 - **#17** Replaced temporary record construction followed by `push_back` with direct `emplace_back` where registration ownership is already final.
 - **#17** Preserved RTTI-free registration/dispatch and re-entrant notification semantics.
+- **#17** Made the root CMake integration portable across ESP-IDF component builds and ordinary host `FetchContent` consumers discovered during coordinated validation.
