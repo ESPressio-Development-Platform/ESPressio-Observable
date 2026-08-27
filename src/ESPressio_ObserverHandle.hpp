@@ -1,8 +1,11 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 #include <memory>
+#include <new>
 
+#include <ESPressio_Memory.hpp>
 #include "ESPressio_IObservable.hpp"
 #include "ESPressio_IObserver.hpp"
 
@@ -22,25 +25,19 @@ namespace ESPressio {
 
                 static std::shared_ptr<Detail::ObservableLifetimeControl>
                 GetValidatedLifetimeControl(IObservable* observable) {
-                    if (observable == nullptr) {
-                        throw InvalidObservableHandleException();
-                    }
+                    if (observable == nullptr) throw InvalidObservableHandleException();
                     return observable->GetLifetimeControl();
                 }
 
                 static std::shared_ptr<Detail::ObservableLifetimeControl>
                 GetValidatedLifetimeControl(
                     std::shared_ptr<Detail::ObservableLifetimeControl> lifetimeControl) {
-                    if (!lifetimeControl) {
-                        throw InvalidObservableHandleException();
-                    }
+                    if (!lifetimeControl) throw InvalidObservableHandleException();
                     return lifetimeControl;
                 }
 
                 static IObserver* GetValidatedObserver(IObserver* observer) {
-                    if (observer == nullptr) {
-                        throw InvalidObserverRegistrationException();
-                    }
+                    if (observer == nullptr) throw InvalidObserverRegistrationException();
                     return observer;
                 }
 
@@ -56,11 +53,26 @@ namespace ESPressio {
                 ObserverHandle(
                     std::shared_ptr<Detail::ObservableLifetimeControl> lifetimeControl,
                     IObserver* observer)
-                    : _lifetimeControl(
-                        GetValidatedLifetimeControl(std::move(lifetimeControl))),
+                    : _lifetimeControl(GetValidatedLifetimeControl(std::move(lifetimeControl))),
                       _observer(GetValidatedObserver(observer)) {}
 
             public:
+                static void* operator new(std::size_t bytes) {
+                    return System::Memory::GetProvider().Allocate(
+                        bytes,
+                        alignof(ObserverHandle),
+                        System::Memory::MemoryPolicy::ExternalPreferred
+                    );
+                }
+
+                static void operator delete(void* pointer) noexcept {
+                    System::Memory::GetProvider().Deallocate(
+                        pointer,
+                        sizeof(ObserverHandle),
+                        alignof(ObserverHandle),
+                        System::Memory::MemoryPolicy::ExternalPreferred
+                    );
+                }
 
                 ObserverHandle(const ObserverHandle&) = delete;
                 ObserverHandle& operator=(const ObserverHandle&) = delete;
@@ -68,17 +80,12 @@ namespace ESPressio {
                 ObserverHandle& operator=(ObserverHandle&&) = delete;
 
                 ~ObserverHandle() noexcept override {
-                    try {
-                        Unregister();
-                    } catch (...) {
-                        // Destructors must not propagate exceptions. Explicitly call
-                        // Unregister() when registration errors need to be observed.
-                    }
+                    try { Unregister(); } catch (...) {}
                 }
 
                 void Unregister() override {
                     IObserver* observer = _observer.load();
-                    if (!_registered.exchange(false)) { return; }
+                    if (!_registered.exchange(false)) return;
 
                     IObservable* observable = _lifetimeControl->Acquire();
                     if (observable == nullptr) {
@@ -99,7 +106,7 @@ namespace ESPressio {
                 }
 
                 IObservable* GetObservable() override {
-                    if (!_registered.load()) { return nullptr; }
+                    if (!_registered.load()) return nullptr;
                     return _lifetimeControl->Peek();
                 }
 
