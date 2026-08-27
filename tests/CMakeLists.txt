@@ -3,22 +3,23 @@ project(ESPressioObservableTests LANGUAGES CXX)
 
 option(ESPRESSIO_ENABLE_COVERAGE "Enable source coverage instrumentation" OFF)
 option(ESPRESSIO_ENABLE_SANITIZERS "Enable address and undefined-behavior sanitizers" OFF)
+set(ESPRESSIO_SYSTEM_DIR "${CMAKE_CURRENT_LIST_DIR}/../../ESPressio-System/src" CACHE PATH "Path to ESPressio System src")
+if(NOT EXISTS "${ESPRESSIO_SYSTEM_DIR}/ESPressio_Memory.hpp")
+    message(FATAL_ERROR "ESPressio System headers not found at ${ESPRESSIO_SYSTEM_DIR}")
+endif()
 
+set(OBSERVABLE_INCLUDES ../src ${ESPRESSIO_SYSTEM_DIR})
 add_executable(espressio_observable_tests test_observable.cpp)
-target_include_directories(espressio_observable_tests PRIVATE ../src)
+target_include_directories(espressio_observable_tests PRIVATE ${OBSERVABLE_INCLUDES})
 target_compile_features(espressio_observable_tests PRIVATE cxx_std_17)
 
 add_executable(espressio_observable_no_rtti_tests test_observable_no_rtti.cpp)
-target_include_directories(espressio_observable_no_rtti_tests PRIVATE ../src)
+target_include_directories(espressio_observable_no_rtti_tests PRIVATE ${OBSERVABLE_INCLUDES})
 target_compile_features(espressio_observable_no_rtti_tests PRIVATE cxx_std_17)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(espressio_observable_tests PRIVATE
-        -Wall -Wextra -Wpedantic -Werror
-    )
-    target_compile_options(espressio_observable_no_rtti_tests PRIVATE
-        -Wall -Wextra -Wpedantic -Werror -fno-rtti
-    )
+    target_compile_options(espressio_observable_tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(espressio_observable_no_rtti_tests PRIVATE -Wall -Wextra -Wpedantic -Werror -fno-rtti)
 elseif(MSVC)
     target_compile_options(espressio_observable_tests PRIVATE /W4 /WX)
     target_compile_options(espressio_observable_no_rtti_tests PRIVATE /W4 /WX /GR-)
@@ -39,12 +40,8 @@ endif()
 
 if(ESPRESSIO_ENABLE_SANITIZERS)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(espressio_observable_tests PRIVATE
-            -fsanitize=address,undefined -fno-omit-frame-pointer
-        )
-        target_link_options(espressio_observable_tests PRIVATE
-            -fsanitize=address,undefined
-        )
+        target_compile_options(espressio_observable_tests PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_options(espressio_observable_tests PRIVATE -fsanitize=address,undefined)
     else()
         message(FATAL_ERROR "Sanitizers are supported only with GCC or Clang")
     endif()
