@@ -1,434 +1,233 @@
 # ESPressio Observable
 
-Synchronous Observer Pattern components for the ESPressio Development Platform.
+Synchronous, typed Observer Pattern infrastructure for the ESPressio Development Platform.
 
-ESPressio Observable provides small, reusable building blocks for one-to-many synchronous notification without forcing an Observable object to know which concrete consumers are listening to it.
+ESPressio Observable is appropriate when a producer must notify one or more independent consumers **during the same operation**. It deliberately does not introduce a queue, worker, scheduler, or asynchronous boundary. For asynchronously scheduled work, use ESPressio Event instead.
 
-## Latest Stable Version
+## Release candidate
 
-**3.0.2**
+This working branch is being prepared for **4.0.0**. The major-version change reflects the new RTTI-free typed observer registry and the wider platform consolidation. Do not use the old 3.x documentation as an API guide for this branch.
 
-Version 3.0.2 is the repository-relocation patch release for the ESPressio-Development-Platform organization. It preserves the Observable 3.0 ownership-safe registration API and runtime behaviour.
+## Key properties
 
-## Why use ESPressio Observable?
+- Synchronous and deterministic notification.
+- Multiple observers and multiple observer interfaces per observable.
+- RAII `ObserverHandlePtr` registration lifetime.
+- Safe unregistration during notification.
+- `Observable` and `ThreadSafeObservable` variants.
+- Typed dispatch without `dynamic_cast` or C++ RTTI.
+- ESPressio-System memory policies for registration storage.
 
-Use Observable when a state change and its notification belong to the same synchronous operation, but the producer should remain independent of the concrete consumers.
+**RTTI is not required.** Do not add `-frtti` or remove `-fno-rtti` for ESPressio Observable 4.x.
 
-Compared with a single callback, an Observable can notify any number of independently implemented Observer objects. Compared with ESPressio Event, Observable does not create an asynchronous scheduling boundary.
+## Dependency
 
-```text
-Observable
-   +--> Observer A
-   +--> Observer B
-   +--> Observer C
-```
+Observable depends on ESPressio-System for allocator-aware storage. During the coordinated release-candidate phase the working branches are used together; published 4.0.0 metadata will target the corresponding released System generation.
 
-This makes Observable particularly useful for lifecycle notifications, state-change callbacks, diagnostics hooks, and low-overhead subsystem observation.
-
-## Observer Pattern and dependency direction
-
-A well-designed Observer relationship is one-way:
-
-```text
-Observer -----> Observable
-Observable -X-> concrete Observer
-```
-
-The Observable defines the notification contract, but never stores knowledge of concrete application consumers. This is a useful way to avoid circular references while still allowing multiple components to react to the same state change.
-
-### Do
-
-- Define small, logically focused Observer interfaces.
-- Keep Observer callbacks short unless the synchronous work is intentionally part of the notifying operation.
-- Keep an Observer alive for as long as it remains registered.
-- Retain the registration handle for exactly as long as the registration should exist.
-- Use `ThreadSafeObservable` when registration/notification can occur from multiple threads.
-
-### Do not
-
-- Introduce a back-reference from an Observable implementation to a concrete Observer.
-- Mutate shared notification arguments unless the notification contract explicitly permits it.
-- Assume `ThreadSafeObservable` automatically makes the custom state in your derived class thread-safe.
-- Retain a raw pointer returned by `IObserverHandle::GetObservable()` or `GetObserver()` beyond the immediate operation.
-
-## ESPressio Development Platform
-
-ESPressio is a collection of discrete, composable component libraries built around a common development ethos:
-
-- **Light-weight** — minimise memory consumption and runtime overhead without sacrificing correctness.
-- **Ease of use** — provide strongly typed, developer-friendly abstractions over lower-level facilities.
-- **Object-oriented** — a type for everything, and everything in a type.
-- **SOLID** — favour focused responsibilities, extensibility, substitutable abstractions, narrow interfaces, and dependency inversion wherever practical on embedded C++ platforms.
-
-Project website: [espressio.org](https://espressio.org).
-
-## License
-
-Licensed under the **Apache License 2.0**. See [LICENSE](LICENSE).
-
-## Namespace
-
-```cpp
-ESPressio::Observable
-```
-
-The most important public types are:
-
-- `IObserver`
-- `IObserverHandle`
-- `ObserverHandlePtr`
-- `IObservable`
-- `IUntypedObservable`
-- `Observable`
-- `ThreadSafeObservable`
-- `ObservableWithBuckets`
-
-## Installation
-
-PlatformIO:
+PlatformIO working-branch example:
 
 ```ini
 lib_deps =
-    espressio-development-platform/ESPressio-Observable@^3.0.2
+    https://github.com/ESPressio-Development-Platform/ESPressio-System.git#feature/1-system-memory-policy
+    https://github.com/ESPressio-Development-Platform/ESPressio-Observable.git#feature/16-rtti-free-observer-registry
 ```
 
-Or, when intentionally tracking the latest development branch:
+## Basic example
 
-```ini
-lib_deps =
-    https://github.com/ESPressio-Development-Platform/ESPressio-Observable.git
-```
+Suppose a thermometer synchronously reports changes to interested application components.
 
-The library requires C++ RTTI because notification filtering uses `dynamic_cast` against Observer interfaces. If your toolchain disables RTTI by default, enable it for the application, for example:
-
-```ini
-build_unflags =
-    -fno-rtti
-```
-
-## Basic usage: a Thermometer Observable
-
-The following example deliberately uses a small, concrete problem: a `Thermometer` detects a changed reading and synchronously notifies any registered temperature Observers.
-
-### 1. Define the Observer interface
+### 1. Define a focused observer interface
 
 ```cpp
-#pragma once
-
 #include <ESPressio_IObserver.hpp>
 
 class ITemperatureObserver :
     public virtual ESPressio::Observable::IObserver {
 public:
     virtual ~ITemperatureObserver() = default;
-
-    virtual void OnTemperatureChanged(
-        float previous,
-        float current
-    ) {}
-
-    virtual void OnTemperatureIncreased(float by) {}
-    virtual void OnTemperatureDecreased(float by) {}
+    virtual void OnTemperatureChanged(float previous, float current) = 0;
 };
 ```
 
-The callback bodies are intentionally optional. A concrete Observer can implement only the notifications it needs.
-
-### 2. Implement the Observable
+### 2. Implement the observable
 
 ```cpp
-#pragma once
-
 #include <ESPressio_Observable.hpp>
-#include "ITemperatureObserver.hpp"
 
-class Thermometer final :
-    public ESPressio::Observable::Observable {
-private:
-    float _temperature = 0.0f;
-
+class Thermometer final : public ESPressio::Observable::Observable {
 public:
-    float GetTemperature() const {
-        return _temperature;
-    }
-
-    void SetTemperature(float temperature) {
-        if (_temperature == temperature) {
-            return;
-        }
+    void SetTemperature(float value) {
+        if (value == _temperature) return;
 
         const float previous = _temperature;
-        _temperature = temperature;
+        _temperature = value;
 
         ExecuteNotification([&](NotificationContext& notification) {
             notification.WithObservers<ITemperatureObserver>(
                 [&](ITemperatureObserver* observer) {
-                    observer->OnTemperatureChanged(previous, temperature);
-
-                    if (temperature > previous) {
-                        observer->OnTemperatureIncreased(
-                            temperature - previous
-                        );
-                    } else {
-                        observer->OnTemperatureDecreased(
-                            previous - temperature
-                        );
-                    }
+                    observer->OnTemperatureChanged(previous, value);
                 }
             );
         });
     }
+
+private:
+    float _temperature = 0.0f;
 };
 ```
 
-`ExecuteNotification()` retains the Observable for the complete notification operation. In the 3.x API, an Observable participating in notifications must therefore be owned through `std::shared_ptr`.
-
-### 3. Implement an Observer
+### 3. Register the interface you intend to notify
 
 ```cpp
-#pragma once
-
-#include <Arduino.h>
-#include "ITemperatureObserver.hpp"
-
-class TemperatureLogger final :
-    public ITemperatureObserver {
+class TemperatureLogger final : public ITemperatureObserver {
 public:
-    void OnTemperatureChanged(
-        float previous,
-        float current
-    ) override {
-        Serial.printf(
-            "Temperature changed from %.2f to %.2f\n",
-            previous,
-            current
-        );
-    }
-
-    void OnTemperatureIncreased(float by) override {
-        Serial.printf("Temperature increased by %.2f\n", by);
-    }
-
-    void OnTemperatureDecreased(float by) override {
-        Serial.printf("Temperature decreased by %.2f\n", by);
+    void OnTemperatureChanged(float previous, float current) override {
+        // Log, update a display, collect diagnostics, etc.
     }
 };
+
+auto thermometer = std::make_shared<Thermometer>();
+TemperatureLogger logger;
+
+auto registration =
+    thermometer->RegisterObserverAs<ITemperatureObserver>(&logger);
+
+thermometer->SetTemperature(22.5f);
 ```
 
-### 4. Register the Observer and retain the handle
+The explicit `RegisterObserverAs<ITemperatureObserver>()` is important in 4.x. Typed notification is resolved from bindings created at registration time; it does not discover interfaces later with `dynamic_cast`.
 
-```cpp
-#include <Arduino.h>
-#include <memory>
+## Why typed registration exists
 
-#include "Thermometer.hpp"
-#include "TemperatureLogger.hpp"
-
-std::shared_ptr<Thermometer> thermometer;
-TemperatureLogger temperatureLogger;
-ESPressio::Observable::ObserverHandlePtr temperatureRegistration;
-
-void setup() {
-    Serial.begin(115200);
-
-    thermometer = std::make_shared<Thermometer>();
-
-    temperatureRegistration =
-        thermometer->RegisterObserver(&temperatureLogger);
-
-    thermometer->SetTemperature(21.5f);
-    thermometer->SetTemperature(22.0f);
-}
-
-void loop() {}
-```
-
-The returned `ObserverHandlePtr` is a `std::unique_ptr<IObserverHandle>`. Destroying the handle automatically unregisters the Observer. You can also unregister explicitly:
-
-```cpp
-temperatureRegistration->Unregister();
-```
-
-or directly through the Observable:
-
-```cpp
-thermometer->UnregisterObserver(&temperatureLogger);
-```
-
-The application must keep `temperatureLogger` alive for the complete period in which the registration is active.
-
-## Registration lifetime and ownership
-
-Version 3.x deliberately makes registration lifetime explicit and ownership-safe:
+Earlier Observable generations could register only the common `IObserver` base and discover a requested interface during notification using RTTI. The current design moves that work to compile time/registration time:
 
 ```text
-std::shared_ptr<Observable>
-        |
-        +-- registration --> ObserverHandlePtr
-                               |
-                               +-- destruction/unregister
-                                   removes registration
+registration
+    observer pointer
+       |
+       +--> ITemperatureObserver binding
+       +--> IAlarmObserver binding
+
+notification WithObservers<ITemperatureObserver>()
+       |
+       +--> visits only matching typed bindings
 ```
 
-Important rules:
+This has three useful consequences:
 
-- `RegisterObserver()` rejects `nullptr`.
-- Duplicate registration against the same Observable is rejected.
-- The Observer remains non-owning; registering it does not extend its lifetime.
-- The registration handle does not own the Observable.
-- Observable destruction invalidates outstanding registrations safely.
-- Notification-aware Observable instances must be `std::shared_ptr`-owned so `ExecuteNotification()` can retain them while callbacks execute.
+1. no RTTI requirement;
+2. no `dynamic_cast` in the notification hot path; and
+3. a requested registration fails at compile time if the concrete observer does not implement the declared interface.
 
-## One Observable, multiple Observer interfaces
-
-A single Observable can expose several independent notification contracts. This is useful when different consumers care about different aspects of the same subsystem.
-
-For example, a physical environmental sensor could define both:
+An observer implementing several interfaces can register them together:
 
 ```cpp
-class ITemperatureObserver :
-    public virtual ESPressio::Observable::IObserver {
-public:
-    virtual void OnTemperatureChanged(float previous, float current) {}
-};
-
-class IAirPressureObserver :
-    public virtual ESPressio::Observable::IObserver {
-public:
-    virtual void OnAirPressureChanged(float previous, float current) {}
-};
+auto registration = thermometer->RegisterObserverAs<
+    ITemperatureObserver,
+    IAlarmObserver
+>(&display);
 ```
 
-The Observable can then target each interface independently:
+Registering the same observer object twice against the same Observable is rejected; declare its complete interface set in one registration.
+
+## Untyped observers
+
+`RegisterObserver(IObserver*)` remains available for genuinely untyped observation. It is equivalent to registering the `IObserver` interface itself. Use it only when notification code calls the untyped overload:
 
 ```cpp
 ExecuteNotification([&](NotificationContext& notification) {
-    notification.WithObservers<ITemperatureObserver>(
-        [&](ITemperatureObserver* observer) {
-            observer->OnTemperatureChanged(oldTemperature, newTemperature);
-        }
-    );
-});
-
-ExecuteNotification([&](NotificationContext& notification) {
-    notification.WithObservers<IAirPressureObserver>(
-        [&](IAirPressureObserver* observer) {
-            observer->OnAirPressureChanged(oldPressure, newPressure);
-        }
-    );
+    notification.WithObservers([&](ESPressio::Observable::IObserver* observer) {
+        // Common-IObserver operation only.
+    });
 });
 ```
 
-A concrete Observer may implement one interface or several of them. This keeps notification contracts focused and supports the Interface Segregation Principle without forcing the Observable to know which combinations exist.
+If your notification calls `WithObservers<IMyObserver>()`, register with `RegisterObserverAs<IMyObserver>()`.
 
-## Thread-safe Observables
+## Registration and lifetime
 
-`Observable` is intentionally not thread-safe. It supports registration/unregistration during notification, but simultaneous operations from multiple threads require external synchronization.
+`ObserverHandlePtr` is an owning smart pointer to the registration handle. Destroying it unregisters the observer. You can also call `Unregister()` explicitly or call `UnregisterObserver()` on the Observable.
 
-When registrations or notifications can cross thread boundaries, derive from:
+The observer itself is **not owned** by Observable. It must remain alive for the complete registration lifetime.
+
+`ExecuteNotification()` acquires the Observable's notification lifetime, so notification-capable Observable instances must participate in the library's shared ownership model (normally `std::shared_ptr`). This prevents the Observable from disappearing while callbacks are executing.
+
+Registration/unregistration during notification is supported. Removed entries are invalidated immediately for dispatch purposes and compacted when the outer notification completes.
+
+## Thread-safe use
+
+Use `ThreadSafeObservable` when registration, unregistration, or notification can occur concurrently:
 
 ```cpp
 #include <ESPressio_ThreadSafeObservable.hpp>
 
-class Thermometer final :
+class ConnectionMonitor final :
     public ESPressio::Observable::ThreadSafeObservable {
-    // notification code follows the same model
+    // ...
 };
 ```
 
-The Observer-facing model remains the same: register an `IObserver`, retain the returned handle, and use the protected notification operation supplied by the Observable implementation.
+Its typed registration and notification model is the same as `Observable`.
 
-> **Important:** `ThreadSafeObservable` protects its Observer registration/notification machinery. It does not automatically protect members such as `_temperature`, sensor buffers, configuration state, or any other fields added by your derived class.
+`ThreadSafeObservable` protects **Observable's registration/notification machinery**. It does not automatically make fields added by your derived class thread-safe. Protect your own mutable state according to its access pattern.
 
-## Mutation during notification
+Observer callbacks are synchronous application code. Keep them short unless the work intentionally belongs inside the notifying operation, and avoid lock-order dependencies between callbacks and the producer.
 
-The current implementation deliberately supports an Observer unregistering while a notification is in progress. Registration containers are compacted safely after the outer notification operation completes.
+## Memory behaviour
 
-This makes patterns such as one-shot observers practical without invalidating the iteration currently delivering a notification.
+Observable uses ESPressio-System allocator-aware containers with `ExternalPreferred` policy for registration/binding storage. On platforms with an installed external-memory provider this allows suitable bookkeeping storage to prefer external RAM while retaining the System-defined fallback behaviour.
 
-## `ObservableWithBuckets`: faster typed dispatch
+The provider used by allocator-aware storage is captured when that storage is constructed. On ESP32 applications that install the ESPressio ESP32 memory provider, install it before constructing long-lived Observable objects whose storage should use that provider.
 
-`ObservableWithBuckets` is a non-thread-safe alternative for applications that repeatedly notify specific Observer interfaces and want to avoid a `dynamic_cast` for every Observer on every notification.
+## Observable versus Event
 
-Unlike `Observable`, the interface set is declared at registration time:
-
-```cpp
-#include <ESPressio_ObservableWithBuckets.hpp>
-
-class Sensor :
-    public ESPressio::Observable::ObservableWithBuckets {
-public:
-    void NotifyTemperature(float value) {
-        ExecuteNotification([&](NotificationContext& notification) {
-            notification.WithObservers<ITemperatureObserver>(
-                [&](ITemperatureObserver* observer) {
-                    observer->OnTemperatureChanged(value, value);
-                }
-            );
-        });
-    }
-};
-
-auto sensor = std::make_shared<Sensor>();
-TemperatureLogger logger;
-
-auto handle = sensor->RegisterObserverAs<ITemperatureObserver>(
-    &logger
-);
-```
-
-An Observer implementing several interfaces can register all of them in one operation:
-
-```cpp
-auto handle = sensor->RegisterObserverAs<
-    ITemperatureObserver,
-    IAirPressureObserver
->(&environmentDisplay);
-```
-
-The library validates each requested interface when registering and stores the resolved interface pointer in a type-specific bucket. Later `WithObservers<T>()` calls therefore iterate only the relevant bucket.
-
-Use `ObservableWithBuckets` when:
-
-- notification frequency is high enough that repeated RTTI filtering matters;
-- Observer interface sets are known when registering; and
-- the Observable does not require concurrent thread-safe registration/notification.
-
-Registration remains ownership-safe and uses the same `ObserverHandlePtr` lifetime model. Registering the same Observer again with a different interface set is rejected rather than silently changing its contract.
-
-## Observable vs Event
-
-Use Observable when the notification is synchronous and naturally belongs to the operation being performed:
+Choose Observable when this is the desired semantic:
 
 ```text
-operation -> state changes -> Observer callbacks -> operation continues
+producer operation
+  -> change state
+  -> notify observers synchronously
+  -> continue/return
 ```
 
-Use ESPressio Event when producers and consumers should be independently scheduled:
+Choose ESPressio Event when producer and consumer should be independently scheduled:
 
 ```text
-producer -> dispatch Event -> producer continues
-                         \
-                          -> asynchronous consumer(s)
+producer -> dispatch event -> producer continues
+                         |
+                         +--> asynchronous consumer
 ```
 
-Observable does **not** depend on Event. Higher-level libraries may consume Observable callbacks and optionally translate them into Events, preserving a one-way dependency graph.
+It is common for a higher-level integration to observe a synchronous subsystem and translate selected notifications into Events. Observable itself does not depend on Event.
 
-## ESPressio Library Dependencies
+## When Observable is a good fit
 
-**Required ESPressio dependencies: none.**
+Use it for lifecycle notifications, state-change callbacks, diagnostics hooks, low-overhead subsystem observation, or any one-to-many relationship where callback completion is part of the producer's operation.
 
-For the complete ESPressio hierarchy, including optional downstream integrations, see [ESPRESSIO_DEPENDENCY_CHART.md](ESPRESSIO_DEPENDENCY_CHART.md).
+Do not use it as a substitute for a work queue, as an ISR-to-task transport, or when observers may perform unbounded/blocking work that should be scheduled independently.
 
-- Solid relationships represent required dependencies.
-- Dashed relationships represent opt-in dependencies.
+## Public namespace and headers
 
-## Design goals
+Namespace:
 
-- Focused Observer contracts.
-- Explicit registration lifetime.
-- Non-owning Observer relationships.
-- Synchronous deterministic notification.
-- Safe registration mutation during callbacks.
-- A thread-safe implementation when required.
-- Reusable infrastructure with no dependency on ESPressio Event.
+```cpp
+ESPressio::Observable
+```
+
+Common public types include `IObserver`, `IObserverHandle`, `ObserverHandlePtr`, `IObservable`, `IUntypedObservable`, `Observable`, and `ThreadSafeObservable`.
+
+Use the focused header for the abstraction you need; `ESPressio_Observable.hpp` provides the core non-thread-safe Observable implementation.
+
+## Design contract
+
+- The producer knows observer **interfaces**, never concrete consumers.
+- Observers remain non-owning registrations.
+- Registration lifetime is explicit and RAII-managed.
+- Typed interfaces are declared at registration time.
+- Notifications are synchronous.
+- RTTI is not part of the dispatch mechanism.
+- Thread safety of derived application state remains the derived type's responsibility.
+
+## License
+
+Apache License 2.0. See `LICENSE`.
