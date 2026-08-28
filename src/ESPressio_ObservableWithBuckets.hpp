@@ -14,6 +14,8 @@
 namespace ESPressio {
 namespace Observable {
 
+/// <summary>Provides RTTI-free typed observer registration and dispatch using interface buckets.</summary>
+/// <remarks>Registrations are keyed by the exact interface set supplied at registration time. Conflicting duplicate registrations are rejected.</remarks>
 class ObservableWithBuckets : public IObservable {
 private:
     struct Registration {
@@ -190,6 +192,7 @@ private:
     }
 
 protected:
+    /// <summary>Provides typed access to observers participating in one bucketed notification.</summary>
     class NotificationContext {
         friend class ObservableWithBuckets;
         ObservableWithBuckets& _observable;
@@ -197,12 +200,14 @@ protected:
         NotificationContext(ObservableWithBuckets& observable, std::shared_ptr<IObservable> notificationLifetime)
             : _observable(observable), _notificationLifetime(std::move(notificationLifetime)) {}
     public:
+        /// <summary>Invokes a callback for observers registered for the requested interface.</summary>
         template<typename ObserverType, typename Callback>
         void WithObservers(Callback&& callback) {
             _observable.template WithObserversTyped<ObserverType>(std::forward<Callback>(callback));
         }
     };
 
+    /// <summary>Executes a typed notification while retaining the Observable's shared lifetime.</summary>
     template<typename Operation>
     void ExecuteNotification(Operation&& operation) {
         std::shared_ptr<IObservable> lifetime = AcquireNotificationLifetime();
@@ -221,12 +226,15 @@ public:
         _registrations.clear();
     }
 
+    /// <summary>Rejects null registration for an explicit observer interface set.</summary>
     template<typename... ObserverInterfaces>
     ObserverHandlePtr RegisterObserverAs(std::nullptr_t) {
         static_assert(sizeof...(ObserverInterfaces) > 0, "At least one Observer interface must be specified");
         throw InvalidObserverRegistrationException();
     }
 
+    /// <summary>Registers an observer for an exact set of typed observer interfaces.</summary>
+    /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
         static_assert(sizeof...(ObserverInterfaces) > 0, "At least one Observer interface must be specified");
@@ -236,6 +244,7 @@ public:
         );
     }
 
+    /// <summary>Unregisters an observer when it is currently registered.</summary>
     void UnregisterObserver(IObserver* observer) override {
         if (observer == nullptr) return;
         for (const auto& registration : _registrations) {
@@ -246,6 +255,7 @@ public:
         }
     }
 
+    /// <summary>Determines whether an observer currently has an active registration.</summary>
     bool IsObserverRegistered(IObserver* observer) override {
         if (observer == nullptr) return false;
         for (const auto& registration : _registrations) {
