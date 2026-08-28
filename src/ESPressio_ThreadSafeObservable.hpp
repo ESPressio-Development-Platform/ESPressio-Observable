@@ -10,15 +10,15 @@
 namespace ESPressio {
 namespace Observable {
 
-/// Thread-safe Observable using the same RTTI-free typed binding registry as
-/// Observable. The recursive lock preserves register/unregister-during-callback
-/// semantics without duplicating observer storage or dispatch machinery.
+/// <summary>Thread-safe Observable using the same RTTI-free typed binding registry as <c>Observable</c>.</summary>
+/// <remarks>A recursive lock preserves registration and unregistration during observer callbacks without duplicating observer storage or dispatch machinery.</remarks>
 class ThreadSafeObservable : public Observable {
 private:
     mutable std::recursive_mutex _mutex;
     std::atomic<std::size_t> _observerCount{0};
 
 protected:
+    /// <summary>Executes a notification while serializing access to observer registrations.</summary>
     template<class Operation>
     void ExecuteNotification(Operation&& operation) {
         // Observable::ExecuteNotification owns the shared-lifetime validation.
@@ -33,6 +33,8 @@ public:
         std::lock_guard<std::recursive_mutex> lock(_mutex);
     }
 
+    /// <summary>Registers an observer for an explicit set of interfaces under the Observable lock.</summary>
+    /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -43,17 +45,18 @@ public:
         return handle;
     }
 
-    /// Register the observer for its static interface type. This is compile-time
-    /// typed registration; no runtime type discovery or RTTI is performed.
+    /// <summary>Registers the observer for its static interface type without runtime type discovery or RTTI.</summary>
     template<typename TObserver>
     ObserverHandlePtr RegisterObserver(TObserver* observer) {
         return RegisterObserverAs<TObserver>(observer);
     }
 
+    /// <summary>Registers an observer through the untyped <c>IObserver</c> interface.</summary>
     ObserverHandlePtr RegisterObserver(IObserver* observer) override {
         return RegisterObserverAs<IObserver>(observer);
     }
 
+    /// <summary>Thread-safely unregisters an observer when currently registered.</summary>
     void UnregisterObserver(IObserver* observer) override {
         if (observer == nullptr) return;
         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -64,6 +67,7 @@ public:
         }
     }
 
+    /// <summary>Thread-safely determines whether an observer has an active registration.</summary>
     bool IsObserverRegistered(IObserver* observer) override {
         if (
             observer == nullptr ||
