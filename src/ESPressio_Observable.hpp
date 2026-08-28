@@ -31,6 +31,8 @@ namespace Detail {
         > {};
 }
 
+/// <summary>Provides RTTI-free observer registration and synchronous notification dispatch.</summary>
+/// <remarks>Typed observer interfaces are captured explicitly during registration. Instances must be owned by <c>std::shared_ptr</c> while notifications are executed.</remarks>
 class Observable : public IUntypedObservable {
 private:
     struct Registration {
@@ -211,6 +213,7 @@ private:
     }
 
 protected:
+    /// <summary>Provides scoped access to the observers participating in one notification operation.</summary>
     class NotificationContext {
     private:
         friend class Observable;
@@ -224,11 +227,14 @@ protected:
             _notificationLifetime(std::move(notificationLifetime)) {}
 
     public:
+        /// <summary>Invokes a callback for every currently registered observer.</summary>
         template<class Callback>
         void WithObservers(Callback&& callback) {
             _observable.WithObserversUntyped(std::forward<Callback>(callback));
         }
 
+        /// <summary>Invokes a callback for observers registered for the requested interface.</summary>
+        /// <typeparam name="ObserverType">Observer interface to enumerate.</typeparam>
         template<class ObserverType, class Callback>
         void WithObservers(Callback&& callback) {
             _observable.template WithObserversTyped<ObserverType>(
@@ -237,6 +243,8 @@ protected:
         }
     };
 
+    /// <summary>Executes a notification operation while retaining the Observable's shared lifetime.</summary>
+    /// <typeparam name="Operation">Callable accepting a <c>NotificationContext&amp;</c>.</typeparam>
     template<class Operation>
     void ExecuteNotification(Operation&& operation) {
         std::shared_ptr<IObservable> lifetime = AcquireNotificationLifetime();
@@ -257,6 +265,11 @@ public:
         _registrations.clear();
     }
 
+    /// <summary>Registers an observer for an explicit set of observer interfaces without runtime type discovery.</summary>
+    /// <typeparam name="ObserverInterfaces">Interfaces through which the observer may be notified.</typeparam>
+    /// <typeparam name="TObserver">Concrete observer type.</typeparam>
+    /// <param name="observer">Observer instance to register.</param>
+    /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
         static_assert(sizeof...(ObserverInterfaces) > 0, "At least one Observer interface must be specified");
@@ -293,10 +306,12 @@ public:
         return ObserverHandlePtr(handle.release());
     }
 
+    /// <summary>Registers an observer through the untyped <c>IObserver</c> interface.</summary>
     ObserverHandlePtr RegisterObserver(IObserver* observer) override {
         return RegisterObserverAs<IObserver>(observer);
     }
 
+    /// <summary>Unregisters an observer when it is currently registered.</summary>
     void UnregisterObserver(IObserver* observer) override {
         if (observer == nullptr) return;
         for (const auto& registration : _registrations) {
@@ -307,6 +322,7 @@ public:
         }
     }
 
+    /// <summary>Determines whether an observer currently has an active registration.</summary>
     bool IsObserverRegistered(IObserver* observer) override {
         if (observer == nullptr) return false;
         for (const auto& registration : _registrations) {
