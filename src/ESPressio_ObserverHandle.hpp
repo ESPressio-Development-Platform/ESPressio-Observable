@@ -13,6 +13,8 @@ namespace ESPressio {
 
     namespace Observable {
 
+        /// <summary>RAII registration handle that safely disconnects an observer from its Observable.</summary>
+        /// <remarks>The handle tracks Observable lifetime independently so destruction remains safe if the Observable has already been destroyed.</remarks>
         class ObserverHandle : public IObserverHandle {
             private:
                 friend class Observable;
@@ -83,6 +85,7 @@ namespace ESPressio {
                     try { Unregister(); } catch (...) {}
                 }
 
+                /// <summary>Unregisters the associated observer once; subsequent calls are no-ops.</summary>
                 void Unregister() override {
                     IObserver* observer = _observer.load();
                     if (!_registered.exchange(false)) return;
@@ -105,11 +108,15 @@ namespace ESPressio {
                     _observer.store(nullptr);
                 }
 
+                /// <summary>Returns the associated Observable while the registration and Observable are still alive.</summary>
+                /// <returns>The Observable pointer, or <c>nullptr</c> after unregistration or Observable destruction.</returns>
                 IObservable* GetObservable() override {
                     if (!_registered.load()) return nullptr;
                     return _lifetimeControl->Peek();
                 }
 
+                /// <summary>Returns the registered observer while this handle remains active.</summary>
+                /// <returns>The observer pointer, or <c>nullptr</c> once the registration has been invalidated.</returns>
                 IObserver* GetObserver() override {
                     return _observer.load();
                 }
