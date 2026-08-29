@@ -1,9 +1,7 @@
 #pragma once
 
 #include <atomic>
-#include <cstddef>
 #include <memory>
-#include <new>
 
 #include <ESPressio_Memory.hpp>
 #include <ESPressio_PolymorphicMemory.hpp>
@@ -15,7 +13,7 @@ namespace ESPressio {
     namespace Observable {
 
         /// <summary>RAII registration handle that safely disconnects an observer from its Observable.</summary>
-        /// <remarks>The handle tracks Observable lifetime independently so destruction remains safe if the Observable has already been destroyed.</remarks>
+        /// <remarks>The handle tracks Observable lifetime independently so destruction remains safe if the Observable has already been destroyed. Concrete handle storage is supplied by ESPressio System polymorphic memory ownership.</remarks>
         class ObserverHandle : public IObserverHandle {
             private:
                 friend class Observable;
@@ -70,23 +68,6 @@ namespace ESPressio {
                       _observer(GetValidatedObserver(observer)) {}
 
             public:
-                static void* operator new(std::size_t bytes) {
-                    return System::Memory::GetProvider().Allocate(
-                        bytes,
-                        alignof(ObserverHandle),
-                        System::Memory::MemoryPolicy::ExternalPreferred
-                    );
-                }
-
-                static void operator delete(void* pointer) noexcept {
-                    System::Memory::GetProvider().Deallocate(
-                        pointer,
-                        sizeof(ObserverHandle),
-                        alignof(ObserverHandle),
-                        System::Memory::MemoryPolicy::ExternalPreferred
-                    );
-                }
-
                 ObserverHandle(const ObserverHandle&) = delete;
                 ObserverHandle& operator=(const ObserverHandle&) = delete;
                 ObserverHandle(ObserverHandle&&) = delete;
