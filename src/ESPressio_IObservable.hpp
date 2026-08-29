@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include <ESPressio_Memory.hpp>
+#include <ESPressio_PolymorphicMemory.hpp>
 #include "ESPressio_IObserver.hpp"
 
 namespace ESPressio {
@@ -144,8 +145,9 @@ namespace ESPressio {
                 virtual IObserver* GetObserver() = 0;
         };
 
-        /// <summary>Owning pointer to an observer registration handle.</summary>
-        using ObserverHandlePtr = std::unique_ptr<IObserverHandle>;
+        /// <summary>Owning pointer to an observer registration handle whose concrete storage is managed through ESPressio System memory policy.</summary>
+        using ObserverHandlePtr =
+            System::Memory::PolymorphicUniquePtr<IObserverHandle>;
 
         /// <summary>Base contract for observable objects with lifetime-safe observer registration.</summary>
         /// <remarks>Notification-capable implementations require ownership by <c>std::shared_ptr</c> so callbacks cannot outlive the observable during dispatch.</remarks>
