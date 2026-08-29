@@ -6,6 +6,7 @@
 #include <new>
 
 #include <ESPressio_Memory.hpp>
+#include <ESPressio_PolymorphicMemory.hpp>
 #include "ESPressio_IObservable.hpp"
 #include "ESPressio_IObserver.hpp"
 
@@ -20,6 +21,16 @@ namespace ESPressio {
                 friend class Observable;
                 friend class ObservableWithBuckets;
                 friend class ThreadSafeObservable;
+
+                /// <summary>Allows the common System polymorphic allocator to invoke the private registration-handle constructor while preserving handle construction as Observable infrastructure.</summary>
+                template<
+                    typename TBase,
+                    typename TDerived,
+                    System::Memory::MemoryPolicy P,
+                    typename... Args
+                >
+                friend System::Memory::PolymorphicUniquePtr<TBase>
+                System::Memory::MakePolymorphicUnique(Args&&... args);
 
                 std::shared_ptr<Detail::ObservableLifetimeControl> _lifetimeControl;
                 std::atomic<IObserver*> _observer;
