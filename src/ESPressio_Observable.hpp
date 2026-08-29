@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <ESPressio_Memory.hpp>
+#include <ESPressio_PolymorphicMemory.hpp>
 #include "ESPressio_IObservable.hpp"
 #include "ESPressio_IObserver.hpp"
 #include "ESPressio_ObserverHandle.hpp"
@@ -269,7 +270,7 @@ public:
     /// <typeparam name="ObserverInterfaces">Interfaces through which the observer may be notified.</typeparam>
     /// <typeparam name="TObserver">Concrete observer type.</typeparam>
     /// <param name="observer">Observer instance to register.</param>
-    /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
+    /// <returns>An RAII handle whose concrete storage prefers external memory and whose destruction unregisters the observer.</returns>
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
         static_assert(sizeof...(ObserverInterfaces) > 0, "At least one Observer interface must be specified");
@@ -293,8 +294,12 @@ public:
         _registrations.reserve(_registrations.size() + 1);
         _bindings.reserve(_bindings.size() + sizeof...(ObserverInterfaces));
 
-        std::unique_ptr<ObserverHandle> handle(new ObserverHandle(GetLifetimeControl(), observerBase));
-        ObserverHandle* rawHandle = handle.get();
+        ObserverHandlePtr handle = System::Memory::MakePolymorphicUnique<
+            IObserverHandle,
+            ObserverHandle,
+            System::Memory::MemoryPolicy::ExternalPreferred
+        >(GetLifetimeControl(), observerBase);
+        ObserverHandle* rawHandle = static_cast<ObserverHandle*>(handle.get());
         _registrations.emplace_back(rawHandle, observerBase, identity);
 
         try {
@@ -303,7 +308,7 @@ public:
             RemoveHandle(rawHandle, false);
             throw;
         }
-        return ObserverHandlePtr(handle.release());
+        return handle;
     }
 
     /// <summary>Registers an observer through the untyped <c>IObserver</c> interface.</summary>
