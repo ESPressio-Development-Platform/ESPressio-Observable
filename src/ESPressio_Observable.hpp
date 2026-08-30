@@ -176,15 +176,34 @@ private:
         );
     }
 
+    template<class Callback, class TObserverPointer>
+    void InvokeObserverCallback(Callback& callback, TObserverPointer observer) {
+        BeforeObserverCallback();
+        try {
+            callback(observer);
+        } catch (...) {
+            AfterObserverCallback();
+            throw;
+        }
+        AfterObserverCallback();
+    }
+
     template<class Callback>
     void WithObserversUntyped(Callback&& callback) {
         ++_notificationDepth;
         const std::size_t count = _registrations.size();
         try {
             for (std::size_t index = 0; index < count; ++index) {
+                // Copy the observer pointer while the caller's registry guard is
+                // active. ThreadSafeObservable may release that guard for the
+                // callback, so no vector reference may cross the callback boundary.
+                IObserver* observer = nullptr;
                 const Registration& registration = _registrations[index];
                 if (registration.Handle != nullptr && registration.Observer != nullptr) {
-                    callback(registration.Observer);
+                    observer = registration.Observer;
+                }
+                if (observer != nullptr) {
+                    InvokeObserverCallback(callback, observer);
                 }
             }
         } catch (...) {
@@ -201,9 +220,20 @@ private:
         const std::size_t bindingCount = _bindings.size();
         try {
             for (std::size_t index = 0; index < bindingCount; ++index) {
+                // Copy the interface pointer before invoking the callback for the
+                // same reason as the untyped path: a thread-safe implementation
+                // may permit registry mutation while user code runs.
+                ObserverType* observer = nullptr;
                 const Binding& binding = _bindings[index];
-                if (binding.Handle != nullptr && binding.Interface != nullptr && binding.Type == type) {
-                    callback(static_cast<ObserverType*>(binding.Interface));
+                if (
+                    binding.Handle != nullptr &&
+                    binding.Interface != nullptr &&
+                    binding.Type == type
+                ) {
+                    observer = static_cast<ObserverType*>(binding.Interface);
+                }
+                if (observer != nullptr) {
+                    InvokeObserverCallback(callback, observer);
                 }
             }
         } catch (...) {
@@ -214,6 +244,14 @@ private:
     }
 
 protected:
+    /// <summary>Hook executed immediately before one observer callback.</summary>
+    /// <remarks>The base implementation is a no-op. Thread-safe implementations may use this boundary to release registry synchronization while preserving a separate notification-lifetime barrier.</remarks>
+    virtual void BeforeObserverCallback() {}
+
+    /// <summary>Hook executed after one observer callback, including exceptional exit.</summary>
+    /// <remarks>The base implementation is a no-op. Implementations overriding <c>BeforeObserverCallback</c> must restore any temporarily released synchronization here.</remarks>
+    virtual void AfterObserverCallback() noexcept {}
+
     /// <summary>Provides scoped access to the observers participating in one notification operation.</summary>
     class NotificationContext {
     private:
