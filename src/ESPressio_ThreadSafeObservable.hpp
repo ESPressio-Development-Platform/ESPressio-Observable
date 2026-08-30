@@ -5,16 +5,17 @@
 #include <mutex>
 #include <utility>
 
+#include <ESPressio_Synchronization.hpp>
 #include "ESPressio_Observable.hpp"
 
 namespace ESPressio {
 namespace Observable {
 
 /// <summary>Thread-safe Observable using the same RTTI-free typed binding registry as <c>Observable</c>.</summary>
-/// <remarks>A recursive lock preserves registration and unregistration during observer callbacks without duplicating observer storage or dispatch machinery.</remarks>
+/// <remarks>A System-provided recursive lock preserves registration and unregistration during observer callbacks without duplicating observer storage or dispatch machinery.</remarks>
 class ThreadSafeObservable : public Observable {
 private:
-    mutable std::recursive_mutex _mutex;
+    mutable System::Synchronization::RecursiveMutex _mutex;
     std::atomic<std::size_t> _observerCount{0};
 
 protected:
@@ -23,21 +24,21 @@ protected:
     void ExecuteNotification(Operation&& operation) {
         // Observable::ExecuteNotification owns the shared-lifetime validation.
         // Do not bypass it merely because the observer count is zero.
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
         Observable::ExecuteNotification(std::forward<Operation>(operation));
     }
 
 public:
     ~ThreadSafeObservable() override {
         BeginObservableDestruction();
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
     }
 
     /// <summary>Registers an observer for an explicit set of interfaces under the Observable lock.</summary>
     /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
     template<typename... ObserverInterfaces, typename TObserver>
     ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
         auto handle = Observable::template RegisterObserverAs<ObserverInterfaces...>(
             observer
         );
@@ -59,7 +60,7 @@ public:
     /// <summary>Thread-safely unregisters an observer when currently registered.</summary>
     void UnregisterObserver(IObserver* observer) override {
         if (observer == nullptr) return;
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
         const bool registered = Observable::IsObserverRegistered(observer);
         Observable::UnregisterObserver(observer);
         if (registered) {
@@ -75,7 +76,7 @@ public:
         ) {
             return false;
         }
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
         return Observable::IsObserverRegistered(observer);
     }
 };
