@@ -76,6 +76,20 @@ public:
         std::lock_guard<System::Synchronization::RecursiveMutex> registryLock(_mutex);
     }
 
+    /// <summary>Returns whether at least one active observer is registered.</summary>
+    /// <remarks>
+    /// This is a lock-free fast-path query backed by the registration-count atomic. It is intended for producers that can
+    /// avoid constructing, retaining, or queueing notification work entirely when no observer can consume it.
+    /// </remarks>
+    bool HasObservers() const noexcept {
+        return _observerCount.load(std::memory_order_acquire) != 0;
+    }
+
+    /// <summary>Returns the current number of active observer registrations.</summary>
+    std::size_t GetObserverCount() const noexcept {
+        return _observerCount.load(std::memory_order_acquire);
+    }
+
     /// <summary>Registers an observer for an explicit set of interfaces under the Observable registry lock.</summary>
     /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
     template<typename... ObserverInterfaces, typename TObserver>
@@ -132,12 +146,7 @@ public:
 
     /// <summary>Thread-safely determines whether an observer has an active registration.</summary>
     bool IsObserverRegistered(IObserver* observer) override {
-        if (
-            observer == nullptr ||
-            _observerCount.load(std::memory_order_acquire) == 0
-        ) {
-            return false;
-        }
+        if (observer == nullptr || !HasObservers()) return false;
         std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
         return Observable::IsObserverRegistered(observer);
     }
