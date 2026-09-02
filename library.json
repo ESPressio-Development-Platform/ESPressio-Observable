@@ -19,7 +19,7 @@
     "dependencies": [
         {
             "name": "ESPressio-System",
-            "version": "https://github.com/ESPressio-Development-Platform/ESPressio-System.git#main",
+            "version": "https://github.com/ESPressio-Development-Platform/ESPressio-System.git#structural_realignment",
             "platforms": "*"
         }
     ]
