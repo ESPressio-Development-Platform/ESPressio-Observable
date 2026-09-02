@@ -6,6 +6,8 @@
 #include <mutex>
 #include <stdexcept>
 
+#include <ESPressio_Memory.hpp>
+#include <ESPressio_PolymorphicMemory.hpp>
 #include "ESPressio_IObserver.hpp"
 
 namespace ESPressio {
@@ -18,22 +20,26 @@ namespace ESPressio {
         class ObserverHandle;
         class ThreadSafeObservable;
 
+        /// <summary>Base exception for failures reported by ESPressio Observable.</summary>
         class ObservableException : public std::runtime_error {
             public:
                 using std::runtime_error::runtime_error;
         };
 
+        /// <summary>Base exception for invalid or conflicting observer registrations.</summary>
         class ObserverRegistrationException : public ObservableException {
             public:
                 using ObservableException::ObservableException;
         };
 
+        /// <summary>Thrown when attempting to register a null observer pointer.</summary>
         class InvalidObserverRegistrationException : public ObserverRegistrationException {
             public:
                 InvalidObserverRegistrationException()
                     : ObserverRegistrationException("Cannot register a null Observer pointer") {}
         };
 
+        /// <summary>Thrown when an observer does not implement every interface requested by a typed registration.</summary>
         class ObserverInterfaceMismatchException : public ObserverRegistrationException {
             public:
                 ObserverInterfaceMismatchException()
@@ -41,6 +47,7 @@ namespace ESPressio {
                         "Observer does not implement every requested Observer interface") {}
         };
 
+        /// <summary>Thrown when an observer is already registered with a different typed interface set.</summary>
         class ObserverRegistrationConflictException : public ObserverRegistrationException {
             public:
                 ObserverRegistrationConflictException()
@@ -48,6 +55,7 @@ namespace ESPressio {
                         "Observer is already registered with a different interface set") {}
         };
 
+        /// <summary>Thrown when an observer is registered more than once against the same observable.</summary>
         class DuplicateObserverRegistrationException : public ObserverRegistrationException {
             public:
                 DuplicateObserverRegistrationException()
@@ -55,11 +63,13 @@ namespace ESPressio {
                         "Observer is already registered with this Observable") {}
         };
 
+        /// <summary>Base exception for invalid observer-handle operations.</summary>
         class ObserverHandleException : public ObservableException {
             public:
                 using ObservableException::ObservableException;
         };
 
+        /// <summary>Thrown when an observer handle cannot be associated with a valid observable lifetime.</summary>
         class InvalidObservableHandleException : public ObserverHandleException {
             public:
                 InvalidObservableHandleException()
@@ -67,6 +77,7 @@ namespace ESPressio {
                         "Cannot construct an Observer Handle without a valid Observable lifetime") {}
         };
 
+        /// <summary>Thrown when notification is attempted without shared ownership of the observable.</summary>
         class ObservableOwnershipException : public ObservableException {
             public:
                 ObservableOwnershipException()
@@ -117,8 +128,7 @@ namespace ESPressio {
             };
         }
 
-        /// An `IObserverHandle` is returned when registering your Observer with an `IObservable`
-        /// It is used to not only check if the `IObservable` still exists, but also to unregister the Observer when desired!
+        /// <summary>RAII-compatible registration handle that can explicitly detach an observer from its observable.</summary>
         class IObserverHandle {
             public:
                 IObserverHandle() = default;
@@ -127,32 +137,33 @@ namespace ESPressio {
                 IObserverHandle(IObserverHandle&&) = delete;
                 IObserverHandle& operator=(IObserverHandle&&) = delete;
                 virtual ~IObserverHandle() = default;
-                /// Will Unregister this Observer from the `IObservable` if it still exists
+                /// <summary>Detaches the associated observer registration; repeated calls are harmless.</summary>
                 virtual void Unregister() = 0;
-                /// Returns the associated `IObservable`, or nullptr once it has begun destruction.
-                /// The returned pointer is non-owning and must not be retained.
+                /// <summary>Gets the associated observable while the registration and observable lifetime remain valid.</summary>
                 virtual IObservable* GetObservable() = 0;
-                /// Returns the non-owning `IObserver` pointer while registered,
-                /// or nullptr after unregistration has begun.
+                /// <summary>Gets the associated observer while the registration remains valid.</summary>
                 virtual IObserver* GetObserver() = 0;
         };
 
-        using ObserverHandlePtr = std::unique_ptr<IObserverHandle>;
-    
-        /// An `IObservable` is an object that can be observed by any number of `IObserver` descendant types
+        /// <summary>Owning pointer to an observer registration handle whose concrete storage is managed through ESPressio System memory policy.</summary>
+        using ObserverHandlePtr =
+            System::Memory::PolymorphicUniquePtr<IObserverHandle>;
+
+        /// <summary>Base contract for observable objects with lifetime-safe observer registration.</summary>
+        /// <remarks>Notification-capable implementations require ownership by <c>std::shared_ptr</c> so callbacks cannot outlive the observable during dispatch.</remarks>
         class IObservable : public std::enable_shared_from_this<IObservable> {
             private:
                 friend class ObserverHandle;
                 std::shared_ptr<Detail::ObservableLifetimeControl> _lifetimeControl;
 
             protected:
+                /// <summary>Gets the lifetime-control object used by observer handles.</summary>
                 std::shared_ptr<Detail::ObservableLifetimeControl> GetLifetimeControl() const {
                     return _lifetimeControl;
                 }
 
-                /// Derived notification entry points must retain the returned token
-                /// for their complete body. This safely defers destruction requested
-                /// by a callback until the outer notification method unwinds.
+                /// <summary>Acquires shared ownership that keeps this observable alive for the duration of a notification.</summary>
+                /// <exception cref="ObservableOwnershipException">Thrown when the observable is not owned by <c>std::shared_ptr</c>.</exception>
                 std::shared_ptr<IObservable> AcquireNotificationLifetime() {
                     try {
                         return shared_from_this();
@@ -161,39 +172,37 @@ namespace ESPressio {
                     }
                 }
 
-                /// Any derived type whose state is used by registration methods must
-                /// invoke this at the start of its most-derived destructor, before
-                /// destroying or locking that state. This includes types derived from
-                /// a concrete Observable implementation when they override those methods.
+                /// <summary>Invalidates observer-handle access and waits for in-flight lifetime operations to finish.</summary>
                 void BeginObservableDestruction() noexcept {
                     _lifetimeControl->InvalidateAndWait();
                 }
 
             public:
+                /// <summary>Creates an observable with a shared lifetime-control object for its registration handles.</summary>
                 IObservable()
                     : _lifetimeControl(
-                        std::make_shared<Detail::ObservableLifetimeControl>(this)) {}
+                        System::Memory::MakeShared<
+                            Detail::ObservableLifetimeControl,
+                            System::Memory::MemoryPolicy::ExternalPreferred
+                        >(this)) {}
                 IObservable(const IObservable&) = delete;
                 IObservable& operator=(const IObservable&) = delete;
                 IObservable(IObservable&&) = delete;
                 IObservable& operator=(IObservable&&) = delete;
-                /// Observable instances participating in notification must be owned
-                /// exclusively through std::shared_ptr. Invoking raw delete on a
-                /// shared-owned Observable is an ownership violation and undefined.
                 virtual ~IObservable() {
                     BeginObservableDestruction();
                 }
-                /// Will Unregister the `IObserver` from this `IObservable`
+                /// <summary>Removes the supplied observer from this observable.</summary>
                 virtual void UnregisterObserver(IObserver* observer) = 0;
-                /// Will return `true` if the `IObserver` is registered with this `IObservable`
+                /// <summary>Indicates whether the supplied observer is currently registered.</summary>
                 virtual bool IsObserverRegistered(IObserver* observer) = 0;
         };
 
-        /// Common interface for Observable implementations whose Observer
-        /// interfaces can be discovered automatically at notification time.
+        /// <summary>Observable contract that permits registration through the untyped <c>IObserver</c> base interface.</summary>
         class IUntypedObservable : public IObservable {
             public:
                 virtual ~IUntypedObservable() = default;
+                /// <summary>Registers an observer using the untyped base observer interface.</summary>
                 virtual ObserverHandlePtr RegisterObserver(IObserver* observer) = 0;
         };
 

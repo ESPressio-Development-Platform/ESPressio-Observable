@@ -3,6 +3,8 @@
 #include <atomic>
 #include <memory>
 
+#include <ESPressio_Memory.hpp>
+#include <ESPressio_PolymorphicMemory.hpp>
 #include "ESPressio_IObservable.hpp"
 #include "ESPressio_IObserver.hpp"
 
@@ -10,11 +12,23 @@ namespace ESPressio {
 
     namespace Observable {
 
+        /// <summary>RAII registration handle that safely disconnects an observer from its Observable.</summary>
+        /// <remarks>The handle tracks Observable lifetime independently so destruction remains safe if the Observable has already been destroyed. Concrete handle storage is supplied by ESPressio System polymorphic memory ownership.</remarks>
         class ObserverHandle : public IObserverHandle {
             private:
                 friend class Observable;
                 friend class ObservableWithBuckets;
                 friend class ThreadSafeObservable;
+
+                /// <summary>Allows the common System polymorphic allocator to invoke the private registration-handle constructor while preserving handle construction as Observable infrastructure.</summary>
+                template<
+                    typename TBase,
+                    typename TDerived,
+                    System::Memory::MemoryPolicy P,
+                    typename... Args
+                >
+                friend System::Memory::PolymorphicUniquePtr<TBase>
+                System::Memory::MakePolymorphicUnique(Args&&... args);
 
                 std::shared_ptr<Detail::ObservableLifetimeControl> _lifetimeControl;
                 std::atomic<IObserver*> _observer;
@@ -22,25 +36,19 @@ namespace ESPressio {
 
                 static std::shared_ptr<Detail::ObservableLifetimeControl>
                 GetValidatedLifetimeControl(IObservable* observable) {
-                    if (observable == nullptr) {
-                        throw InvalidObservableHandleException();
-                    }
+                    if (observable == nullptr) throw InvalidObservableHandleException();
                     return observable->GetLifetimeControl();
                 }
 
                 static std::shared_ptr<Detail::ObservableLifetimeControl>
                 GetValidatedLifetimeControl(
                     std::shared_ptr<Detail::ObservableLifetimeControl> lifetimeControl) {
-                    if (!lifetimeControl) {
-                        throw InvalidObservableHandleException();
-                    }
+                    if (!lifetimeControl) throw InvalidObservableHandleException();
                     return lifetimeControl;
                 }
 
                 static IObserver* GetValidatedObserver(IObserver* observer) {
-                    if (observer == nullptr) {
-                        throw InvalidObserverRegistrationException();
-                    }
+                    if (observer == nullptr) throw InvalidObserverRegistrationException();
                     return observer;
                 }
 
@@ -56,29 +64,23 @@ namespace ESPressio {
                 ObserverHandle(
                     std::shared_ptr<Detail::ObservableLifetimeControl> lifetimeControl,
                     IObserver* observer)
-                    : _lifetimeControl(
-                        GetValidatedLifetimeControl(std::move(lifetimeControl))),
+                    : _lifetimeControl(GetValidatedLifetimeControl(std::move(lifetimeControl))),
                       _observer(GetValidatedObserver(observer)) {}
 
             public:
-
                 ObserverHandle(const ObserverHandle&) = delete;
                 ObserverHandle& operator=(const ObserverHandle&) = delete;
                 ObserverHandle(ObserverHandle&&) = delete;
                 ObserverHandle& operator=(ObserverHandle&&) = delete;
 
                 ~ObserverHandle() noexcept override {
-                    try {
-                        Unregister();
-                    } catch (...) {
-                        // Destructors must not propagate exceptions. Explicitly call
-                        // Unregister() when registration errors need to be observed.
-                    }
+                    try { Unregister(); } catch (...) {}
                 }
 
+                /// <summary>Unregisters the associated observer once; subsequent calls are no-ops.</summary>
                 void Unregister() override {
                     IObserver* observer = _observer.load();
-                    if (!_registered.exchange(false)) { return; }
+                    if (!_registered.exchange(false)) return;
 
                     IObservable* observable = _lifetimeControl->Acquire();
                     if (observable == nullptr) {
@@ -98,11 +100,15 @@ namespace ESPressio {
                     _observer.store(nullptr);
                 }
 
+                /// <summary>Returns the associated Observable while the registration and Observable are still alive.</summary>
+                /// <returns>The Observable pointer, or <c>nullptr</c> after unregistration or Observable destruction.</returns>
                 IObservable* GetObservable() override {
-                    if (!_registered.load()) { return nullptr; }
+                    if (!_registered.load()) return nullptr;
                     return _lifetimeControl->Peek();
                 }
 
+                /// <summary>Returns the registered observer while this handle remains active.</summary>
+                /// <returns>The observer pointer, or <c>nullptr</c> once the registration has been invalidated.</returns>
                 IObserver* GetObserver() override {
                     return _observer.load();
                 }

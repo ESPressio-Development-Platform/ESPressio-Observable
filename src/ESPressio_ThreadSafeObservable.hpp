@@ -1,222 +1,156 @@
 #pragma once
 
-#include <algorithm>
 #include <atomic>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <utility>
-#include <vector>
 
-#include "ESPressio_IObservable.hpp"
-#include "ESPressio_IObserver.hpp"
-#include "ESPressio_ObserverHandle.hpp"
+#include <ESPressio_Synchronization.hpp>
+#include "ESPressio_Observable.hpp"
 
 namespace ESPressio {
+namespace Observable {
 
-    namespace Observable {
-   
-        /// A `ThreadSafeObservable` is an object that can be observed by any number of `IObserver` descendant types
-        /// This is a concrete implementation of `IObservable`, and is Thread Safe!
-        /// Your Observers can Register or Unregister themselves at any time, and the `ThreadSafeObservable` will handle it!
-        class ThreadSafeObservable : public IUntypedObservable {
-            private:
-                std::vector<IObserverHandle*> _observers;
-                std::recursive_mutex _mutex;
-                std::atomic<std::size_t> _observerCount{0};
-                std::size_t _notificationDepth = 0;
-                bool _needsCompaction = false;
+/// <summary>Thread-safe Observable using the same RTTI-free typed binding registry as <c>Observable</c>.</summary>
+/// <remarks>
+/// Registry mutations are protected by a System recursive mutex, while a separate recursive notification mutex
+/// serializes notification execution and preserves the historical guarantee that unregistration does not return while
+/// another thread is still executing an observer callback. The registry mutex is released around user callbacks so
+/// observer code may safely call into other synchronized subsystems without participating in a cross-component lock cycle.
+/// </remarks>
+class ThreadSafeObservable : public Observable {
+private:
+    mutable System::Synchronization::RecursiveMutex _mutex;
+    mutable System::Synchronization::RecursiveMutex _notificationMutex;
+    std::atomic<std::size_t> _observerCount{0};
 
-                bool _isObserverRegistered(IObserver* observer) const {
-                    for (IObserverHandle* handle : _observers) {
-                        if (handle != nullptr && handle->GetObserver() == observer) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-
-                void _finishNotification() {
-                    if (--_notificationDepth == 0 && _needsCompaction) {
-                        _observers.erase(
-                            std::remove(_observers.begin(), _observers.end(), nullptr),
-                            _observers.end());
-                        _needsCompaction = false;
-                    }
-                }
-
-                template <class Callback>
-                void _withObservers(Callback&& callback) {
-                    std::lock_guard<std::recursive_mutex> lock(_mutex);
-                    ++_notificationDepth;
-                    const std::size_t observerCount = _observers.size();
-                    try {
-                        for (std::size_t index = 0; index < observerCount; ++index) {
-                            IObserverHandle* handle = _observers[index];
-                            if (handle != nullptr) {
-                                callback(handle->GetObserver());
-                            }
-                        }
-                    } catch (...) {
-                        _finishNotification();
-                        throw;
-                    }
-                    _finishNotification();
-                }
-
-                template <class ObserverType, class Callback>
-                void _withObservers(Callback&& callback) {
-                    std::lock_guard<std::recursive_mutex> lock(_mutex);
-                    ++_notificationDepth;
-                    const std::size_t observerCount = _observers.size();
-                    try {
-                        for (std::size_t index = 0; index < observerCount; ++index) {
-                            IObserverHandle* handle = _observers[index];
-                            if (handle == nullptr) {
-                                continue;
-                            }
-                            ObserverType* observerAsT =
-                                dynamic_cast<ObserverType*>(handle->GetObserver());
-                            if (observerAsT != nullptr) {
-                                callback(observerAsT);
-                            }
-                        }
-                    } catch (...) {
-                        _finishNotification();
-                        throw;
-                    }
-                    _finishNotification();
-                }
-
-            protected:
-                class NotificationContext {
-                    private:
-                        friend class ThreadSafeObservable;
-                        ThreadSafeObservable& _observable;
-                        std::shared_ptr<IObservable> _notificationLifetime;
-                        NotificationContext(
-                            ThreadSafeObservable& observable,
-                            std::shared_ptr<IObservable> notificationLifetime)
-                            : _observable(observable),
-                              _notificationLifetime(std::move(notificationLifetime)) {}
-
-                    public:
-                        template <class Callback>
-                        void WithObservers(Callback&& callback) {
-                            _observable._withObservers(
-                                std::forward<Callback>(callback));
-                        }
-
-                        template <class ObserverType, class Callback>
-                        void WithObservers(Callback&& callback) {
-                            _observable._withObservers<ObserverType>(
-                                std::forward<Callback>(callback));
-                        }
-                };
-
-                template <class Operation>
-                void ExecuteNotification(Operation&& operation) {
-                    /*
-                     * Notifications are intentionally very cheap when no observers
-                     * are registered. The relaxed/acquire atomic read avoids taking
-                     * the recursive mutex and avoids acquiring a notification-lifetime
-                     * shared_ptr on the overwhelmingly common production fast path.
-                     *
-                     * A concurrently registering observer is not required to observe
-                     * a notification that had already begun before registration.
-                     */
-                    if (
-                        _observerCount.load(
-                            std::memory_order_acquire
-                        ) == 0
-                    ) {
-                        return;
-                    }
-
-                    NotificationContext context(
-                        *this,
-                        AcquireNotificationLifetime());
-                    operation(context);
-                }
-
-            public:
-                ~ThreadSafeObservable() override {
-                    BeginObservableDestruction();
-                    std::lock_guard<std::recursive_mutex> lock(_mutex);
-                    for (IObserverHandle* handle : _observers) {
-                        if (handle != nullptr) {
-                            static_cast<ObserverHandle*>(handle)->InvalidateRegistration();
-                        }
-                    }
-                    _observers.clear();
-                    _observerCount.store(0, std::memory_order_release);
-                }
-
-                ObserverHandlePtr RegisterObserver(IObserver* observer) override {
-                    if (observer == nullptr) {
-                        throw InvalidObserverRegistrationException();
-                    }
-                    std::lock_guard<std::recursive_mutex> lock(_mutex);
-                    for (auto thisObserver : _observers) {
-                        if (thisObserver != nullptr &&
-                            thisObserver->GetObserver() == observer) {
-                            throw DuplicateObserverRegistrationException();
-                        }
-                    }
-                    std::unique_ptr<ObserverHandle> handle(
-                        new ObserverHandle(GetLifetimeControl(), observer));
-                    _observers.push_back(handle.get());
-                    _observerCount.fetch_add(1, std::memory_order_release);
-                    return ObserverHandlePtr(handle.release());
-                }
-
-                void UnregisterObserver(IObserver* observer) override {
-                    std::lock_guard<std::recursive_mutex> lock(_mutex);
-                    for (
-                        auto thisObserver = _observers.begin();
-                        thisObserver != _observers.end();
-                        ++thisObserver
-                    ) {
-                        if (
-                            *thisObserver == nullptr ||
-                            (*thisObserver)->GetObserver() != observer
-                        ) {
-                            continue;
-                        }
-
-                        static_cast<ObserverHandle*>(
-                            *thisObserver
-                        )->InvalidateRegistration();
-
-                        _observerCount.fetch_sub(
-                            1,
-                            std::memory_order_acq_rel
-                        );
-
-                        if (_notificationDepth > 0) {
-                            *thisObserver = nullptr;
-                            _needsCompaction = true;
-                        } else {
-                            _observers.erase(thisObserver);
-                        }
-                        return;
-                    }
-                }
-
-                bool IsObserverRegistered(IObserver* observer) override {
-                    if (
-                        _observerCount.load(
-                            std::memory_order_acquire
-                        ) == 0
-                    ) {
-                        return false;
-                    }
-
-                    std::lock_guard<std::recursive_mutex> lock(_mutex);
-                    return _isObserverRegistered(observer);
-                }
-        };
-
+protected:
+    /// <inheritdoc/>
+    void BeforeObserverCallback() override {
+        // ExecuteNotification holds _notificationMutex for the entire
+        // notification operation. Releasing only the registry mutex allows
+        // registration/query/unregistration to proceed while user code runs,
+        // while the notification mutex remains the observer-lifetime barrier.
+        _mutex.unlock();
     }
 
-}
+    /// <inheritdoc/>
+    void AfterObserverCallback() noexcept override {
+        _mutex.lock();
+    }
+
+    /// <summary>Executes a notification while serializing notification lifetime separately from registry access.</summary>
+    template<class Operation>
+    void ExecuteNotification(Operation&& operation) {
+        // Serialize complete notification operations, preserving the old
+        // single-notifier semantics and giving UnregisterObserver a stable
+        // lifetime barrier. Recursive use permits nested notifications from a
+        // callback on the same execution context.
+        std::lock_guard<System::Synchronization::RecursiveMutex> notificationLock(
+            _notificationMutex
+        );
+
+        // Observable::ExecuteNotification owns shared-lifetime validation. The
+        // registry mutex begins locked, is released only around each user
+        // callback by the hook above, and is restored before base iteration or
+        // exception unwinding resumes.
+        _mutex.lock();
+        try {
+            Observable::ExecuteNotification(std::forward<Operation>(operation));
+        } catch (...) {
+            _mutex.unlock();
+            throw;
+        }
+        _mutex.unlock();
+    }
+
+public:
+    ~ThreadSafeObservable() override {
+        BeginObservableDestruction();
+        // Notifications own shared lifetime, so destruction normally cannot
+        // begin while one is active. Taking both barriers also makes this
+        // invariant explicit for handle/destruction races.
+        std::lock_guard<System::Synchronization::RecursiveMutex> notificationLock(
+            _notificationMutex
+        );
+        std::lock_guard<System::Synchronization::RecursiveMutex> registryLock(_mutex);
+    }
+
+    /// <summary>Returns whether at least one active observer is registered.</summary>
+    /// <remarks>
+    /// This is a lock-free fast-path query backed by the registration-count atomic. It is intended for producers that can
+    /// avoid constructing, retaining, or queueing notification work entirely when no observer can consume it.
+    /// </remarks>
+    bool HasObservers() const noexcept {
+        return _observerCount.load(std::memory_order_acquire) != 0;
+    }
+
+    /// <summary>Returns the current number of active observer registrations.</summary>
+    std::size_t GetObserverCount() const noexcept {
+        return _observerCount.load(std::memory_order_acquire);
+    }
+
+    /// <summary>Registers an observer for an explicit set of interfaces under the Observable registry lock.</summary>
+    /// <returns>An RAII handle whose destruction unregisters the observer.</returns>
+    template<typename... ObserverInterfaces, typename TObserver>
+    ObserverHandlePtr RegisterObserverAs(TObserver* observer) {
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
+        auto handle = Observable::template RegisterObserverAs<ObserverInterfaces...>(
+            observer
+        );
+        _observerCount.fetch_add(1, std::memory_order_release);
+        return handle;
+    }
+
+    /// <summary>Registers the observer for its static interface type without runtime type discovery or RTTI.</summary>
+    template<typename TObserver>
+    ObserverHandlePtr RegisterObserver(TObserver* observer) {
+        return RegisterObserverAs<TObserver>(observer);
+    }
+
+    /// <summary>Registers an observer through the untyped <c>IObserver</c> interface.</summary>
+    ObserverHandlePtr RegisterObserver(IObserver* observer) override {
+        return RegisterObserverAs<IObserver>(observer);
+    }
+
+    /// <summary>Thread-safely unregisters an observer and waits for any already-running notification to leave user code.</summary>
+    /// <remarks>
+    /// Removal from the registry happens first, preventing a new callback from starting for this registration. The
+    /// notification barrier is then acquired after releasing the registry lock. Because it is recursive, an observer may
+    /// unregister itself (or another observer) from inside its own callback without deadlocking.
+    /// </remarks>
+    void UnregisterObserver(IObserver* observer) override {
+        if (observer == nullptr) return;
+
+        bool registered = false;
+        {
+            std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
+            registered = Observable::IsObserverRegistered(observer);
+            Observable::UnregisterObserver(observer);
+            if (registered) {
+                _observerCount.fetch_sub(1, std::memory_order_acq_rel);
+            }
+        }
+
+        if (registered) {
+            // A concurrent notification may have copied the observer pointer
+            // immediately before registry removal. Waiting on the complete
+            // notification barrier ensures that callback has returned before
+            // this unregistration call can hand lifetime control back to the
+            // observer owner. Self-unregistration succeeds recursively.
+            std::lock_guard<System::Synchronization::RecursiveMutex> notificationLock(
+                _notificationMutex
+            );
+        }
+    }
+
+    /// <summary>Thread-safely determines whether an observer has an active registration.</summary>
+    bool IsObserverRegistered(IObserver* observer) override {
+        if (observer == nullptr || !HasObservers()) return false;
+        std::lock_guard<System::Synchronization::RecursiveMutex> lock(_mutex);
+        return Observable::IsObserverRegistered(observer);
+    }
+};
+
+} // namespace Observable
+} // namespace ESPressio

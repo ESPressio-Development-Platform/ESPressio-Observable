@@ -4,9 +4,8 @@ namespace ESPressio {
 
     namespace Observable {
 
-        /// An `IObserver` is an object that can observe an `IObservable`
-        /// You MUST inherit from this type for ANY object from which you intend to Observe any `IObservable` descendant types
-        /// This is required to satisfy the `dynamic_cast` requirements of the `Observable` class, and cannot be avoided due to C++ language limitations.
+        /// <summary>Base interface implemented by objects that participate in ESPressio observer relationships.</summary>
+        /// <remarks>Typed observer relationships are declared explicitly at registration time; ESPressio Observable does not require RTTI, <c>typeid</c>, or <c>dynamic_cast</c> to discover observer interfaces at runtime.</remarks>
         class IObserver {
             public:
                 virtual ~IObserver() = default;

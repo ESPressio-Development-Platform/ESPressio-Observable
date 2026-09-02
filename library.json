@@ -1,7 +1,7 @@
 {
     "name": "ESPressio-Observable",
-    "description": "Observer-Pattern library for microcontrollers with modern C++ toolchains",
-    "keywords": "observer,observable,observation,observer pattern,pattern,design pattern,callback,watcher,notifier,espressio",
+    "description": "RTTI-free synchronous Observer Pattern library for modern embedded C++ toolchains",
+    "keywords": "observer,observable,observation,observer pattern,callback,notifier,espressio,rtti-free",
     "authors": {
         "name": "Simon J. Stuart",
         "maintainer": true,
@@ -12,9 +12,15 @@
         "type": "git",
         "url": "https://github.com/ESPressio-Development-Platform/ESPressio-Observable.git"
     },
-    "version": "3.0.2",
+    "version": "4.0.0",
     "license": "Apache-2.0",
     "frameworks": "*",
     "platforms": "*",
-    "dependencies": []
+    "dependencies": [
+        {
+            "name": "ESPressio-System",
+            "version": "https://github.com/ESPressio-Development-Platform/ESPressio-System.git#feature/1-system-memory-policy",
+            "platforms": "*"
+        }
+    ]
 }
