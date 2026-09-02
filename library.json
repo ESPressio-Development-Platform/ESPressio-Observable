@@ -19,7 +19,7 @@
     "dependencies": [
         {
             "name": "ESPressio-System",
-            "version": "https://github.com/ESPressio-Development-Platform/ESPressio-System.git#feature/1-system-memory-policy",
+            "version": "https://github.com/ESPressio-Development-Platform/ESPressio-System.git#main",
             "platforms": "*"
         }
     ]
