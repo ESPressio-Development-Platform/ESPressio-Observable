@@ -36,30 +36,30 @@ Units 0.2.3
     -> none
 
 Timing 2.2.4
-    -> Units >= 0.2.3 < 1.0.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Units main
+    -> Observable main
 
 Threads 3.1.4
-    -> Timing >= 2.2.4 < 3.0.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Timing main
+    -> Observable main
 
 Event 6.0.0
-    -> Threads >= 3.1.4 < 4.0.0
-    -> Timing >= 2.2.4 < 3.0.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Threads main
+    -> Timing main
+    -> Observable main
 
 Command 1.0.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Observable main
 
 Security 0.3.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Observable main
 
 Sockets 0.7.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Observable main
 
 ESP-Now 0.8.0
-    -> Timing >= 2.2.4 < 3.0.0
-    -> Observable >= 3.0.1 < 4.0.0
+    -> Timing main
+    -> Observable main
 
 Serial 0.7.2
     -> none in the core package
@@ -69,41 +69,41 @@ Serial 0.7.2
 
 ```text
 Units
-    - - -> Serializable >= 0.10.2 < 1.0.0
+    - - -> Serializable main
             Serializable Unit variants
 
 Event
-    - - -> Serializable >= 0.10.2 < 1.0.0
+    - - -> Serializable main
             Serializable Events / Event Transport
 
 Command
-    - - -> Event >= 6.0.0 < 7.0.0
+    - - -> Event main
             Command-owned Event types / CommandRegistryEventBridge
 
 Security
-    - - -> Event >= 6.0.0 < 7.0.0
+    - - -> Event main
             Security-owned Event types / TransportSecurityEventBridge
 
 Sockets
-    - - -> Event >= 6.0.0 < 7.0.0
-    - - -> Command >= 1.0.0 < 2.0.0
-    - - -> Security >= 0.3.0 < 1.0.0
-    - - -> Timing >= 2.2.4 < 3.0.0
+    - - -> Event main
+    - - -> Command main
+    - - -> Security main
+    - - -> Timing main
 
 ESP-Now
-    - - -> Event >= 6.0.0 < 7.0.0
-    - - -> Command >= 1.0.0 < 2.0.0
-    - - -> Security >= 0.3.0 < 1.0.0
+    - - -> Event main
+    - - -> Command main
+    - - -> Security main
 
 Serial
-    - - -> Command >= 1.0.0 < 2.0.0
-    - - -> Security >= 0.3.0 < 1.0.0
-    - - -> Sockets >= 0.7.0 < 1.0.0
-    - - -> ESP-Now >= 0.8.0 < 1.0.0
-    - - -> Event >= 6.0.0 < 7.0.0
-    - - -> Serializable >= 0.10.2 < 1.0.0
-    - - -> Timing >= 2.2.4 < 3.0.0
-    - - -> Threads >= 3.1.4 < 4.0.0
+    - - -> Command main
+    - - -> Security main
+    - - -> Sockets main
+    - - -> ESP-Now main
+    - - -> Event main
+    - - -> Serializable main
+    - - -> Timing main
+    - - -> Threads main
 ```
 
 `JsonCommandInterpreter` optionally consumes external **ArduinoJson 7.x**. ArduinoJson is not an ESPressio library and is therefore not represented as an ESPressio graph edge.
