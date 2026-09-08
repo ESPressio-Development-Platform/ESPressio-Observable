@@ -18,10 +18,11 @@ namespace ESPressio {
  * ESPressio Memory Audit
  * Inherited Memory Total: 4 bytes [0 bytes dynamic allocation]
  * Members:
- * - _lifetimeControl (std::shared_ptr<Detail::ObservableLifetimeControl>): 8 bytes [shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * - _lifetimeControl (std::shared_ptr<Detail::ObservableLifetimeControl>): 8 bytes [shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; pointee: _mutex: native synchronization state may allocate platform resources lazily; pointee: _condition: native condition-variable state may allocate platform synchronization resources]
  * - _observer (std::atomic<IObserver*>): 4 bytes [0 bytes dynamic allocation]
- * Total Memory: 16 bytes [_lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * - _registered (std::atomic<bool>): 1 bytes [0 bytes dynamic allocation]
+ * Total Memory: 20 bytes [_lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
  * End ESPressio Memory Audit
  */

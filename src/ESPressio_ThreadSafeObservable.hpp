@@ -20,13 +20,14 @@ namespace Observable {
 /// </remarks>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr [0 bytes dynamic allocation]
+ * Inherited Memory Total: 52 bytes [Observable: IUntypedObservable: IObservable: enable_shared_from_this: embedded weak_ptr shares a control block when activated; Observable: IUntypedObservable: IObservable: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; Observable: IUntypedObservable: IObservable: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; Observable: IUntypedObservable: IObservable: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources; Observable: _registrations: Capacity * (12 bytes) element storage; Observable: _bindings: Capacity * (12 bytes) element storage]
  * Members:
- * - _mutex (System::Synchronization::RecursiveMutex): sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
- * - _notificationMutex (System::Synchronization::RecursiveMutex): sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
- * Total Memory: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * - _mutex (System::Synchronization::RecursiveMutex): 20 bytes [_owned: owned object: 4 bytes; _fallback: _mutex: native synchronization state may allocate platform resources lazily]
+ * - _notificationMutex (System::Synchronization::RecursiveMutex): 20 bytes [_owned: owned object: 4 bytes; _fallback: _mutex: native synchronization state may allocate platform resources lazily]
+ * - _observerCount (std::atomic<std::size_t>): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 96 bytes [Observable: IUntypedObservable: IObservable: enable_shared_from_this: embedded weak_ptr shares a control block when activated; Observable: IUntypedObservable: IObservable: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; Observable: IUntypedObservable: IObservable: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; Observable: IUntypedObservable: IObservable: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources; Observable: _registrations: Capacity * (12 bytes) element storage; Observable: _bindings: Capacity * (12 bytes) element storage; _mutex: _owned: owned object: 4 bytes; _mutex: _fallback: _mutex: native synchronization state may allocate platform resources lazily; _notificationMutex: _owned: owned object: 4 bytes; _notificationMutex: _fallback: _mutex: native synchronization state may allocate platform resources lazily]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
+ * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
  * End ESPressio Memory Audit
  */
 class ThreadSafeObservable : public Observable {

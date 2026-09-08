@@ -23,11 +23,10 @@ namespace ESPressio {
         /// <summary>Base exception for failures reported by ESPressio Observable.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class ObservableException : public std::runtime_error {
@@ -38,11 +37,10 @@ class ObservableException : public std::runtime_error {
         /// <summary>Base exception for invalid or conflicting observer registrations.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class ObserverRegistrationException : public ObservableException {
@@ -53,11 +51,10 @@ class ObserverRegistrationException : public ObservableException {
         /// <summary>Thrown when attempting to register a null observer pointer.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class InvalidObserverRegistrationException : public ObserverRegistrationException {
@@ -69,11 +66,10 @@ class InvalidObserverRegistrationException : public ObserverRegistrationExceptio
         /// <summary>Thrown when an observer does not implement every interface requested by a typed registration.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class ObserverInterfaceMismatchException : public ObserverRegistrationException {
@@ -86,11 +82,10 @@ class ObserverInterfaceMismatchException : public ObserverRegistrationException 
         /// <summary>Thrown when an observer is already registered with a different typed interface set.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class ObserverRegistrationConflictException : public ObserverRegistrationException {
@@ -103,11 +98,10 @@ class ObserverRegistrationConflictException : public ObserverRegistrationExcepti
         /// <summary>Thrown when an observer is registered more than once against the same observable.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObserverRegistrationException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class DuplicateObserverRegistrationException : public ObserverRegistrationException {
@@ -120,11 +114,10 @@ class DuplicateObserverRegistrationException : public ObserverRegistrationExcept
         /// <summary>Base exception for invalid observer-handle operations.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class ObserverHandleException : public ObservableException {
@@ -135,11 +128,10 @@ class ObserverHandleException : public ObservableException {
         /// <summary>Thrown when an observer handle cannot be associated with a valid observable lifetime.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObserverHandleException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObserverHandleException: ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class InvalidObservableHandleException : public ObserverHandleException {
@@ -152,11 +144,10 @@ class InvalidObservableHandleException : public ObserverHandleException {
         /// <summary>Thrown when notification is attempted without shared ownership of the observable.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
- * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 8 bytes [ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 8 bytes [ObservableException: runtime_error: exception message/ref-count storage is dynamically retained by libstdc++]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class ObservableOwnershipException : public ObservableException {
@@ -170,14 +161,14 @@ class ObservableOwnershipException : public ObservableException {
 /**
  * ESPressio Memory Audit
  * Members:
- * - _mutex (std::mutex): sizeof(std::mutex) [0 bytes dynamic allocation]
- * - _condition (std::condition_variable): sizeof(std::condition_variable) [0 bytes dynamic allocation]
+ * - _mutex (std::mutex): 4 bytes [native synchronization state may allocate platform resources lazily]
+ * - _condition (std::condition_variable): 4 bytes [native condition-variable state may allocate platform synchronization resources]
  * - _observable (IObservable*): 4 bytes [0 bytes dynamic allocation]
  * - _activeOperations (std::size_t): 4 bytes [0 bytes dynamic allocation]
  * - _alive (bool): 1 bytes [0 bytes dynamic allocation]
- * Total Memory: 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable) [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Total Memory: 20 bytes [_mutex: native synchronization state may allocate platform resources lazily; _condition: native condition-variable state may allocate platform synchronization resources]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
+ * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
  * End ESPressio Memory Audit
  */
 class ObservableLifetimeControl {
@@ -225,9 +216,9 @@ class ObservableLifetimeControl {
         /// <summary>RAII-compatible registration handle that can explicitly detach an observer from its observable.</summary>
 /**
  * ESPressio Memory Audit
- * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
+ * Members: none; polymorphic/virtual-base object metadata is included in the total.
  * Total Memory: 4 bytes [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class IObserverHandle {
@@ -254,12 +245,12 @@ class IObserverHandle {
         /// <remarks>Notification-capable implementations require ownership by <c>std::shared_ptr</c> so callbacks cannot outlive the observable during dispatch.</remarks>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::enable_shared_from_this<IObservable>) [0 bytes dynamic allocation]
+ * Inherited Memory Total: 8 bytes [enable_shared_from_this: embedded weak_ptr shares a control block when activated]
  * Members:
- * - _lifetimeControl (std::shared_ptr<Detail::ObservableLifetimeControl>): 8 bytes [shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
- * Total Memory: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [_lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * - _lifetimeControl (std::shared_ptr<Detail::ObservableLifetimeControl>): 8 bytes [shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; pointee: _mutex: native synchronization state may allocate platform resources lazily; pointee: _condition: native condition-variable state may allocate platform synchronization resources]
+ * Total Memory: 20 bytes [enable_shared_from_this: embedded weak_ptr shares a control block when activated; _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
+ * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
  * End ESPressio Memory Audit
  */
 class IObservable : public std::enable_shared_from_this<IObservable> {
@@ -312,11 +303,10 @@ class IObservable : public std::enable_shared_from_this<IObservable> {
         /// <summary>Observable contract that permits registration through the untyped <c>IObserver</c> base interface.</summary>
 /**
  * ESPressio Memory Audit
- * Inherited Memory Total: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
- * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
- * Total Memory: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
- * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
- * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * Inherited Memory Total: 20 bytes [IObservable: enable_shared_from_this: embedded weak_ptr shares a control block when activated; IObservable: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; IObservable: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; IObservable: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
+ * Members: none; polymorphic/virtual-base object metadata is included in the total.
+ * Total Memory: 20 bytes [IObservable: enable_shared_from_this: embedded weak_ptr shares a control block when activated; IObservable: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; IObservable: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; IObservable: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
  * End ESPressio Memory Audit
  */
 class IUntypedObservable : public IObservable {
