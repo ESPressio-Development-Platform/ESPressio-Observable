@@ -34,9 +34,32 @@ namespace Detail {
 
 /// <summary>Provides RTTI-free observer registration and synchronous notification dispatch.</summary>
 /// <remarks>Typed observer interfaces are captured explicitly during registration. Instances must be owned by <c>std::shared_ptr</c> while notifications are executed.</remarks>
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [IUntypedObservable: IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Members:
+ * - _registrations (RegistrationStorage): sizeof(RegistrationStorage) [0 bytes dynamic allocation]
+ * - _bindings (BindingStorage): sizeof(BindingStorage) [0 bytes dynamic allocation]
+ * - _notificationDepth (std::size_t): 4 bytes [0 bytes dynamic allocation]
+ * - _needsCompaction (bool): 1 bytes [0 bytes dynamic allocation]
+ * Total Memory: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) [IUntypedObservable: IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
 class Observable : public IUntypedObservable {
 private:
-    struct Registration {
+/**
+ * ESPressio Memory Audit
+ * Members:
+ * - Handle (IObserverHandle*): 4 bytes [0 bytes dynamic allocation]
+ * - Observer (IObserver*): 4 bytes [0 bytes dynamic allocation]
+ * - Identity (void*): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 12 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct Registration {
         IObserverHandle* Handle;
         IObserver* Observer;
         const void* Identity;
@@ -48,7 +71,18 @@ private:
         ) : Handle(handle), Observer(observer), Identity(identity) {}
     };
 
-    struct Binding {
+/**
+ * ESPressio Memory Audit
+ * Members:
+ * - Handle (IObserverHandle*): 4 bytes [0 bytes dynamic allocation]
+ * - Type (ObserverTypeKey): sizeof(ObserverTypeKey) [0 bytes dynamic allocation]
+ * - Interface (void*): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 8 bytes known members + sizeof(ObserverTypeKey) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+struct Binding {
         IObserverHandle* Handle;
         ObserverTypeKey Type;
         void* Interface;
@@ -253,7 +287,17 @@ protected:
     virtual void AfterObserverCallback() noexcept {}
 
     /// <summary>Provides scoped access to the observers participating in one notification operation.</summary>
-    class NotificationContext {
+/**
+ * ESPressio Memory Audit
+ * Members:
+ * - _observable (Observable&): 4 bytes [0 bytes dynamic allocation]
+ * - _notificationLifetime (std::shared_ptr<IObservable>): 8 bytes [shared control block (~12+ bytes) and, when owning separately, object sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr; pointee: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Total Memory: 12 bytes [_notificationLifetime: shared control block (~12+ bytes) and, when owning separately, object sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr; _notificationLifetime: pointee: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class NotificationContext {
     private:
         friend class Observable;
         Observable& _observable;

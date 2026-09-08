@@ -21,26 +21,62 @@ namespace ESPressio {
         class ThreadSafeObservable;
 
         /// <summary>Base exception for failures reported by ESPressio Observable.</summary>
-        class ObservableException : public std::runtime_error {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObservableException : public std::runtime_error {
             public:
                 using std::runtime_error::runtime_error;
         };
 
         /// <summary>Base exception for invalid or conflicting observer registrations.</summary>
-        class ObserverRegistrationException : public ObservableException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObserverRegistrationException : public ObservableException {
             public:
                 using ObservableException::ObservableException;
         };
 
         /// <summary>Thrown when attempting to register a null observer pointer.</summary>
-        class InvalidObserverRegistrationException : public ObserverRegistrationException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class InvalidObserverRegistrationException : public ObserverRegistrationException {
             public:
                 InvalidObserverRegistrationException()
                     : ObserverRegistrationException("Cannot register a null Observer pointer") {}
         };
 
         /// <summary>Thrown when an observer does not implement every interface requested by a typed registration.</summary>
-        class ObserverInterfaceMismatchException : public ObserverRegistrationException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObserverInterfaceMismatchException : public ObserverRegistrationException {
             public:
                 ObserverInterfaceMismatchException()
                     : ObserverRegistrationException(
@@ -48,7 +84,16 @@ namespace ESPressio {
         };
 
         /// <summary>Thrown when an observer is already registered with a different typed interface set.</summary>
-        class ObserverRegistrationConflictException : public ObserverRegistrationException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObserverRegistrationConflictException : public ObserverRegistrationException {
             public:
                 ObserverRegistrationConflictException()
                     : ObserverRegistrationException(
@@ -56,7 +101,16 @@ namespace ESPressio {
         };
 
         /// <summary>Thrown when an observer is registered more than once against the same observable.</summary>
-        class DuplicateObserverRegistrationException : public ObserverRegistrationException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class DuplicateObserverRegistrationException : public ObserverRegistrationException {
             public:
                 DuplicateObserverRegistrationException()
                     : ObserverRegistrationException(
@@ -64,13 +118,31 @@ namespace ESPressio {
         };
 
         /// <summary>Base exception for invalid observer-handle operations.</summary>
-        class ObserverHandleException : public ObservableException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObserverHandleException : public ObservableException {
             public:
                 using ObservableException::ObservableException;
         };
 
         /// <summary>Thrown when an observer handle cannot be associated with a valid observable lifetime.</summary>
-        class InvalidObservableHandleException : public ObserverHandleException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class InvalidObservableHandleException : public ObserverHandleException {
             public:
                 InvalidObservableHandleException()
                     : ObserverHandleException(
@@ -78,7 +150,16 @@ namespace ESPressio {
         };
 
         /// <summary>Thrown when notification is attempted without shared ownership of the observable.</summary>
-        class ObservableOwnershipException : public ObservableException {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(std::runtime_error) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObservableOwnershipException : public ObservableException {
             public:
                 ObservableOwnershipException()
                     : ObservableException(
@@ -86,7 +167,20 @@ namespace ESPressio {
         };
 
         namespace Detail {
-            class ObservableLifetimeControl {
+/**
+ * ESPressio Memory Audit
+ * Members:
+ * - _mutex (std::mutex): sizeof(std::mutex) [0 bytes dynamic allocation]
+ * - _condition (std::condition_variable): sizeof(std::condition_variable) [0 bytes dynamic allocation]
+ * - _observable (IObservable*): 4 bytes [0 bytes dynamic allocation]
+ * - _activeOperations (std::size_t): 4 bytes [0 bytes dynamic allocation]
+ * - _alive (bool): 1 bytes [0 bytes dynamic allocation]
+ * Total Memory: 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObservableLifetimeControl {
                 private:
                     mutable std::mutex _mutex;
                     std::condition_variable _condition;
@@ -129,7 +223,14 @@ namespace ESPressio {
         }
 
         /// <summary>RAII-compatible registration handle that can explicitly detach an observer from its observable.</summary>
-        class IObserverHandle {
+/**
+ * ESPressio Memory Audit
+ * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
+ * Total Memory: 4 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+class IObserverHandle {
             public:
                 IObserverHandle() = default;
                 IObserverHandle(const IObserverHandle&) = delete;
@@ -151,7 +252,17 @@ namespace ESPressio {
 
         /// <summary>Base contract for observable objects with lifetime-safe observer registration.</summary>
         /// <remarks>Notification-capable implementations require ownership by <c>std::shared_ptr</c> so callbacks cannot outlive the observable during dispatch.</remarks>
-        class IObservable : public std::enable_shared_from_this<IObservable> {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::enable_shared_from_this<IObservable>) [0 bytes dynamic allocation]
+ * Members:
+ * - _lifetimeControl (std::shared_ptr<Detail::ObservableLifetimeControl>): 8 bytes [shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Total Memory: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [_lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class IObservable : public std::enable_shared_from_this<IObservable> {
             private:
                 friend class ObserverHandle;
                 std::shared_ptr<Detail::ObservableLifetimeControl> _lifetimeControl;
@@ -199,7 +310,16 @@ namespace ESPressio {
         };
 
         /// <summary>Observable contract that permits registration through the untyped <c>IObserver</c> base interface.</summary>
-        class IUntypedObservable : public IObservable {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
+ * Total Memory: sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr [IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class IUntypedObservable : public IObservable {
             public:
                 virtual ~IUntypedObservable() = default;
                 /// <summary>Registers an observer using the untyped base observer interface.</summary>

@@ -1,0 +1,1335 @@
+{
+  "schema": "espressio-memory-audit-v1",
+  "pass": 1,
+  "repository": "ESPressio-Observable",
+  "branch": "structural_realignment",
+  "basis": {
+    "target": "ESP32/Xtensa ILP32 reference ABI",
+    "pointer_bytes": 4,
+    "size_t_bytes": 4,
+    "notes": "GNU libstdc++ control-block sizes are reference values; target/compiler sizeof is authoritative for ABI-sensitive and opaque types."
+  },
+  "missing_external_catalogs": [
+    "ESPressio-Timing",
+    "ESPressio-Serializable",
+    "ESPressio-Threads",
+    "ESPressio-Event",
+    "ESPressio-Mesh",
+    "ESPressio-Sockets",
+    "ESPressio-Serial",
+    "ESPressio-WiFi",
+    "ESPressio-Logging",
+    "ESPressio-Command",
+    "ESPressio-ESP32",
+    "ESPressio-Lua",
+    "ESPressio-MeshAdapters",
+    "ESPressio-NRF24",
+    "ESPressio-Persistence",
+    "ESPressio-Radio",
+    "ESPressio-Security",
+    "ESPressio-State",
+    "ESPressio-Units",
+    "ESPressio-Web"
+  ],
+  "type_count": 41,
+  "types": [
+    {
+      "name": "ObservableException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 24,
+      "bases": [
+        "std::runtime_error"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ObserverRegistrationException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 30,
+      "bases": [
+        "ObservableException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "InvalidObserverRegistrationException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 36,
+      "bases": [
+        "ObserverRegistrationException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ObserverInterfaceMismatchException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 43,
+      "bases": [
+        "ObserverRegistrationException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ObserverRegistrationConflictException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 51,
+      "bases": [
+        "ObserverRegistrationException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "DuplicateObserverRegistrationException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 59,
+      "bases": [
+        "ObserverRegistrationException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ObserverHandleException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 67,
+      "bases": [
+        "ObservableException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "InvalidObservableHandleException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 73,
+      "bases": [
+        "ObserverHandleException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ObservableOwnershipException",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 81,
+      "bases": [
+        "ObservableException"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::runtime_error)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::runtime_error)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ObservableLifetimeControl",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 89,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "_mutex",
+          "type": "std::mutex",
+          "declaration": "std::mutex _mutex",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(std::mutex)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_condition",
+          "type": "std::condition_variable",
+          "declaration": "std::condition_variable _condition",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(std::condition_variable)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_observable",
+          "type": "IObservable*",
+          "declaration": "IObservable* _observable",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "_activeOperations",
+          "type": "std::size_t",
+          "declaration": "std::size_t _activeOperations",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        },
+        {
+          "name": "_alive",
+          "type": "bool",
+          "declaration": "bool _alive",
+          "fixed_bytes": 1,
+          "fixed_text": "1 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 8
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "IObserverHandle",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 132,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "high"
+    },
+    {
+      "name": "IObservable",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 154,
+      "bases": [
+        "std::enable_shared_from_this<IObservable>"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>)",
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "_lifetimeControl",
+          "type": "std::shared_ptr<Detail::ObservableLifetimeControl>",
+          "declaration": "std::shared_ptr<Detail::ObservableLifetimeControl> _lifetimeControl",
+          "fixed_bytes": 8,
+          "fixed_text": "8 bytes",
+          "dynamic_terms": [
+            "shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+          ],
+          "confidence": "low",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+      "align": 4,
+      "dynamic_terms": [
+        "_lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "low"
+    },
+    {
+      "name": "IUntypedObservable",
+      "kind": "class",
+      "file": "src/ESPressio_IObservable.hpp",
+      "line": 202,
+      "bases": [
+        "IObservable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+      "inherited_dynamic_terms": [
+        "IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+      "align": 4,
+      "dynamic_terms": [
+        "IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "low"
+    },
+    {
+      "name": "IObserver",
+      "kind": "class",
+      "file": "src/ESPressio_IObserver.hpp",
+      "line": 9,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "high"
+    },
+    {
+      "name": "Observable",
+      "kind": "class",
+      "file": "src/ESPressio_Observable.hpp",
+      "line": 37,
+      "bases": [
+        "IUntypedObservable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+      "inherited_dynamic_terms": [
+        "IUntypedObservable: IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "members": [
+        {
+          "name": "_registrations",
+          "type": "RegistrationStorage",
+          "declaration": "RegistrationStorage _registrations",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(RegistrationStorage)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_bindings",
+          "type": "BindingStorage",
+          "declaration": "BindingStorage _bindings",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(BindingStorage)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_notificationDepth",
+          "type": "std::size_t",
+          "declaration": "std::size_t _notificationDepth",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "_needsCompaction",
+          "type": "bool",
+          "declaration": "bool _needsCompaction",
+          "fixed_bytes": 1,
+          "fixed_text": "1 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage)",
+      "align": 4,
+      "dynamic_terms": [
+        "IUntypedObservable: IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "low"
+    },
+    {
+      "name": "Registration",
+      "kind": "struct",
+      "file": "src/ESPressio_Observable.hpp",
+      "line": 39,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "Handle",
+          "type": "IObserverHandle*",
+          "declaration": "IObserverHandle* Handle",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "Observer",
+          "type": "IObserver*",
+          "declaration": "IObserver* Observer",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        },
+        {
+          "name": "Identity",
+          "type": "void*",
+          "declaration": "const void* Identity",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 8
+        }
+      ],
+      "fixed_bytes": 12,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "Binding",
+      "kind": "struct",
+      "file": "src/ESPressio_Observable.hpp",
+      "line": 51,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "Handle",
+          "type": "IObserverHandle*",
+          "declaration": "IObserverHandle* Handle",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "Type",
+          "type": "ObserverTypeKey",
+          "declaration": "ObserverTypeKey Type",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(ObserverTypeKey)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "Interface",
+          "type": "void*",
+          "declaration": "void* Interface",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "8 bytes known members + sizeof(ObserverTypeKey)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "NotificationContext",
+      "kind": "class",
+      "file": "src/ESPressio_Observable.hpp",
+      "line": 256,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "_observable",
+          "type": "Observable&",
+          "declaration": "Observable& _observable",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "_notificationLifetime",
+          "type": "std::shared_ptr<IObservable>",
+          "declaration": "std::shared_ptr<IObservable> _notificationLifetime",
+          "fixed_bytes": 8,
+          "fixed_text": "8 bytes",
+          "dynamic_terms": [
+            "shared control block (~12+ bytes) and, when owning separately, object sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+            "pointee: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+          ],
+          "confidence": "low",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": 12,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [
+        "_notificationLifetime: shared control block (~12+ bytes) and, when owning separately, object sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+        "_notificationLifetime: pointee: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "medium"
+    },
+    {
+      "name": "ObservableWithBuckets",
+      "kind": "class",
+      "file": "src/ESPressio_ObservableWithBuckets.hpp",
+      "line": 20,
+      "bases": [
+        "IObservable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+      "inherited_dynamic_terms": [
+        "IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "members": [
+        {
+          "name": "_registrations",
+          "type": "RegistrationStorage",
+          "declaration": "RegistrationStorage _registrations",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(RegistrationStorage)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_bindings",
+          "type": "BindingStorage",
+          "declaration": "BindingStorage _bindings",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(BindingStorage)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_notificationDepth",
+          "type": "std::size_t",
+          "declaration": "std::size_t _notificationDepth",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "_needsCompaction",
+          "type": "bool",
+          "declaration": "bool _needsCompaction",
+          "fixed_bytes": 1,
+          "fixed_text": "1 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage)",
+      "align": 4,
+      "dynamic_terms": [
+        "IObservable: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "Registration",
+      "kind": "struct",
+      "file": "src/ESPressio_ObservableWithBuckets.hpp",
+      "line": 22,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "Handle",
+          "type": "IObserverHandle*",
+          "declaration": "IObserverHandle* Handle",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "Observer",
+          "type": "IObserver*",
+          "declaration": "IObserver* Observer",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        },
+        {
+          "name": "Identity",
+          "type": "void*",
+          "declaration": "const void* Identity",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 8
+        }
+      ],
+      "fixed_bytes": 12,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "Binding",
+      "kind": "struct",
+      "file": "src/ESPressio_ObservableWithBuckets.hpp",
+      "line": 30,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "Handle",
+          "type": "IObserverHandle*",
+          "declaration": "IObserverHandle* Handle",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "Type",
+          "type": "ObserverTypeKey",
+          "declaration": "ObserverTypeKey Type",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(ObserverTypeKey)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "Interface",
+          "type": "void*",
+          "declaration": "void* Interface",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "8 bytes known members + sizeof(ObserverTypeKey)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "NotificationContext",
+      "kind": "class",
+      "file": "src/ESPressio_ObservableWithBuckets.hpp",
+      "line": 201,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "_observable",
+          "type": "ObservableWithBuckets&",
+          "declaration": "ObservableWithBuckets& _observable",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        },
+        {
+          "name": "_notificationLifetime",
+          "type": "std::shared_ptr<IObservable>",
+          "declaration": "std::shared_ptr<IObservable> _notificationLifetime",
+          "fixed_bytes": 8,
+          "fixed_text": "8 bytes",
+          "dynamic_terms": [
+            "shared control block (~12+ bytes) and, when owning separately, object sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+            "pointee: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+          ],
+          "confidence": "low",
+          "offset": 4
+        }
+      ],
+      "fixed_bytes": 12,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [
+        "_notificationLifetime: shared control block (~12+ bytes) and, when owning separately, object sizeof(std::enable_shared_from_this<IObservable>) + 8 bytes known members + 4 bytes vptr",
+        "_notificationLifetime: pointee: _lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "medium"
+    },
+    {
+      "name": "ObserverHandle",
+      "kind": "class",
+      "file": "src/ESPressio_ObserverHandle.hpp",
+      "line": 17,
+      "bases": [
+        "IObserverHandle"
+      ],
+      "inherited_fixed_bytes": 4,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "_lifetimeControl",
+          "type": "std::shared_ptr<Detail::ObservableLifetimeControl>",
+          "declaration": "std::shared_ptr<Detail::ObservableLifetimeControl> _lifetimeControl",
+          "fixed_bytes": 8,
+          "fixed_text": "8 bytes",
+          "dynamic_terms": [
+            "shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+          ],
+          "confidence": "low",
+          "offset": 4
+        },
+        {
+          "name": "_observer",
+          "type": "std::atomic<IObserver*>",
+          "declaration": "std::atomic<IObserver*> _observer",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 12
+        }
+      ],
+      "fixed_bytes": 16,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [
+        "_lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)"
+      ],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "medium"
+    },
+    {
+      "name": "ThreadSafeObservable",
+      "kind": "class",
+      "file": "src/ESPressio_ThreadSafeObservable.hpp",
+      "line": 21,
+      "bases": [
+        "Observable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr",
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "_mutex",
+          "type": "System::Synchronization::RecursiveMutex",
+          "declaration": "System::Synchronization::RecursiveMutex _mutex",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(System::Synchronization::RecursiveMutex)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        },
+        {
+          "name": "_notificationMutex",
+          "type": "System::Synchronization::RecursiveMutex",
+          "declaration": "System::Synchronization::RecursiveMutex _notificationMutex",
+          "fixed_bytes": null,
+          "fixed_text": "sizeof(System::Synchronization::RecursiveMutex)",
+          "dynamic_terms": [],
+          "confidence": "low",
+          "offset": null
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "InterfaceA",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 64,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "high"
+    },
+    {
+      "name": "InterfaceB",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 69,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "high"
+    },
+    {
+      "name": "InterfaceC",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 74,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "high"
+    },
+    {
+      "name": "ObserverA",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 79,
+      "bases": [
+        "IObserver",
+        "InterfaceA"
+      ],
+      "inherited_fixed_bytes": 8,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "calls",
+          "type": "int",
+          "declaration": "int calls",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 8
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "declaration": "int value",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 12
+        }
+      ],
+      "fixed_bytes": 16,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "ObserverAB",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 85,
+      "bases": [
+        "IObserver",
+        "InterfaceA",
+        "InterfaceB"
+      ],
+      "inherited_fixed_bytes": 12,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "callsA",
+          "type": "int",
+          "declaration": "int callsA",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 12
+        },
+        {
+          "name": "callsB",
+          "type": "int",
+          "declaration": "int callsB",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 16
+        },
+        {
+          "name": "valueA",
+          "type": "int",
+          "declaration": "int valueA",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 20
+        },
+        {
+          "name": "valueB",
+          "type": "int",
+          "declaration": "int valueB",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 24
+        }
+      ],
+      "fixed_bytes": 28,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "PlainObserver",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 94,
+      "bases": [
+        "IObserver"
+      ],
+      "inherited_fixed_bytes": 4,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "SelfRemovingObserver",
+      "kind": "struct",
+      "file": "tests/test_observable.cpp",
+      "line": 96,
+      "bases": [
+        "IObserver",
+        "InterfaceA"
+      ],
+      "inherited_fixed_bytes": 8,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "handle",
+          "type": "ObserverHandlePtr*",
+          "declaration": "ObserverHandlePtr* handle",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 8
+        },
+        {
+          "name": "calls",
+          "type": "int",
+          "declaration": "int calls",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 12
+        }
+      ],
+      "fixed_bytes": 16,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "TestObservable",
+      "kind": "class",
+      "file": "tests/test_observable.cpp",
+      "line": 105,
+      "bases": [
+        "Observable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "ThrowingUnregisterObservable",
+      "kind": "class",
+      "file": "tests/test_observable.cpp",
+      "line": 140,
+      "bases": [
+        "Observable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr",
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "throwOnUnregister",
+          "type": "bool",
+          "declaration": "bool throwOnUnregister",
+          "fixed_bytes": 1,
+          "fixed_text": "1 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 0
+        }
+      ],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr + 1 bytes known members",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "TestThreadSafeObservable",
+      "kind": "class",
+      "file": "tests/test_observable.cpp",
+      "line": 152,
+      "bases": [
+        "ThreadSafeObservable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "TestBucketObservable",
+      "kind": "class",
+      "file": "tests/test_observable.cpp",
+      "line": 168,
+      "bases": [
+        "ObservableWithBuckets"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(IObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(IObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "IValueObserver",
+      "kind": "struct",
+      "file": "tests/test_observable_no_rtti.cpp",
+      "line": 10,
+      "bases": [],
+      "inherited_fixed_bytes": 0,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": true,
+      "confidence": "high"
+    },
+    {
+      "name": "Observer",
+      "kind": "struct",
+      "file": "tests/test_observable_no_rtti.cpp",
+      "line": 15,
+      "bases": [
+        "IObserver",
+        "IValueObserver"
+      ],
+      "inherited_fixed_bytes": 8,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [
+        {
+          "name": "Calls",
+          "type": "int",
+          "declaration": "int Calls",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 8
+        },
+        {
+          "name": "Value",
+          "type": "int",
+          "declaration": "int Value",
+          "fixed_bytes": 4,
+          "fixed_text": "4 bytes",
+          "dynamic_terms": [],
+          "confidence": "high",
+          "offset": 12
+        }
+      ],
+      "fixed_bytes": 16,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "Source",
+      "kind": "class",
+      "file": "tests/test_observable_no_rtti.cpp",
+      "line": 25,
+      "bases": [
+        "ThreadSafeObservable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    },
+    {
+      "name": "TestObserver",
+      "kind": "class",
+      "file": "tests/test_observer_presence.cpp",
+      "line": 9,
+      "bases": [
+        "IObserver"
+      ],
+      "inherited_fixed_bytes": 4,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "TestObserver",
+      "kind": "struct",
+      "file": "tests/test_threadsafe_callback_boundaries.cpp",
+      "line": 12,
+      "bases": [
+        "IObserver"
+      ],
+      "inherited_fixed_bytes": 4,
+      "inherited_fixed_expr": null,
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": 4,
+      "fixed_expr": null,
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "high"
+    },
+    {
+      "name": "TestObservable",
+      "kind": "class",
+      "file": "tests/test_threadsafe_callback_boundaries.cpp",
+      "line": 16,
+      "bases": [
+        "ThreadSafeObservable"
+      ],
+      "inherited_fixed_bytes": null,
+      "inherited_fixed_expr": "sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "inherited_dynamic_terms": [],
+      "members": [],
+      "fixed_bytes": null,
+      "fixed_expr": "sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex)",
+      "align": 4,
+      "dynamic_terms": [],
+      "requires_preallocation": false,
+      "polymorphic": false,
+      "confidence": "low"
+    }
+  ]
+}

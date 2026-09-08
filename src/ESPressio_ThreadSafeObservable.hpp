@@ -18,6 +18,17 @@ namespace Observable {
 /// another thread is still executing an observer callback. The registry mutex is released around user callbacks so
 /// observer code may safely call into other synchronized subsystems without participating in a cross-component lock cycle.
 /// </remarks>
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr [0 bytes dynamic allocation]
+ * Members:
+ * - _mutex (System::Synchronization::RecursiveMutex): sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
+ * - _notificationMutex (System::Synchronization::RecursiveMutex): sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
+ * Total Memory: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
 class ThreadSafeObservable : public Observable {
 private:
     mutable System::Synchronization::RecursiveMutex _mutex;

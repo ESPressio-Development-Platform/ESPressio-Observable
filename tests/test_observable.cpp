@@ -61,28 +61,71 @@ static_assert(!std::is_constructible<ObserverHandle, IObservable*, IObserver*>::
 
 namespace {
 
-    struct InterfaceA {
+/**
+ * ESPressio Memory Audit
+ * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
+ * Total Memory: 4 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct InterfaceA {
         virtual ~InterfaceA() = default;
         virtual void OnA(int value) = 0;
     };
 
-    struct InterfaceB {
+/**
+ * ESPressio Memory Audit
+ * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
+ * Total Memory: 4 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct InterfaceB {
         virtual ~InterfaceB() = default;
         virtual void OnB(int value) = 0;
     };
 
-    struct InterfaceC {
+/**
+ * ESPressio Memory Audit
+ * Members: none; polymorphic interface/object includes vptr storage where not supplied by a base.
+ * Total Memory: 4 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct InterfaceC {
         virtual ~InterfaceC() = default;
         virtual void OnC() = 0;
     };
 
-    struct ObserverA final : IObserver, InterfaceA {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 8 bytes [0 bytes dynamic allocation]
+ * Members:
+ * - calls (int): 4 bytes [0 bytes dynamic allocation]
+ * - value (int): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 16 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct ObserverA final : IObserver, InterfaceA {
         int calls = 0;
         int value = 0;
         void OnA(int newValue) override { ++calls; value = newValue; }
     };
 
-    struct ObserverAB final : IObserver, InterfaceA, InterfaceB {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 12 bytes [0 bytes dynamic allocation]
+ * Members:
+ * - callsA (int): 4 bytes [0 bytes dynamic allocation]
+ * - callsB (int): 4 bytes [0 bytes dynamic allocation]
+ * - valueA (int): 4 bytes [0 bytes dynamic allocation]
+ * - valueB (int): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 28 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct ObserverAB final : IObserver, InterfaceA, InterfaceB {
         int callsA = 0;
         int callsB = 0;
         int valueA = 0;
@@ -91,9 +134,27 @@ namespace {
         void OnB(int value) override { ++callsB; valueB = value; }
     };
 
-    struct PlainObserver final : IObserver {};
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 4 bytes [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: 4 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct PlainObserver final : IObserver {};
 
-    struct SelfRemovingObserver final : IObserver, InterfaceA {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 8 bytes [0 bytes dynamic allocation]
+ * Members:
+ * - handle (ObserverHandlePtr*): 4 bytes [0 bytes dynamic allocation]
+ * - calls (int): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 16 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * End ESPressio Memory Audit
+ */
+struct SelfRemovingObserver final : IObserver, InterfaceA {
         ObserverHandlePtr* handle = nullptr;
         int calls = 0;
         void OnA(int) override {
@@ -102,7 +163,16 @@ namespace {
         }
     };
 
-    class TestObservable final : public Observable {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class TestObservable final : public Observable {
         public:
             void NotifyAll(const std::function<void(IObserver*)>& callback) {
                 ExecuteNotification([&](NotificationContext& notification) {
@@ -137,7 +207,17 @@ namespace {
             }
     };
 
-    class ThrowingUnregisterObservable final : public Observable {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr [0 bytes dynamic allocation]
+ * Members:
+ * - throwOnUnregister (bool): 1 bytes [0 bytes dynamic allocation]
+ * Total Memory: sizeof(IUntypedObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) + 4 bytes vptr + 1 bytes known members [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ThrowingUnregisterObservable final : public Observable {
         public:
             bool throwOnUnregister = true;
 
@@ -149,7 +229,16 @@ namespace {
             }
     };
 
-    class TestThreadSafeObservable final : public ThreadSafeObservable {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(Observable) + sizeof(System::Synchronization::RecursiveMutex) + sizeof(System::Synchronization::RecursiveMutex) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class TestThreadSafeObservable final : public ThreadSafeObservable {
         public:
             void NotifyAll(const std::function<void(IObserver*)>& callback) {
                 ExecuteNotification([&](NotificationContext& notification) {
@@ -165,7 +254,16 @@ namespace {
             }
     };
 
-    class TestBucketObservable final : public ObservableWithBuckets {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: sizeof(IObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) [0 bytes dynamic allocation]
+ * Members: none (empty object still occupies at least 1 byte unless empty-base optimisation applies).
+ * Total Memory: sizeof(IObservable) + 5 bytes known members + sizeof(RegistrationStorage) + sizeof(BindingStorage) [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: low; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class TestBucketObservable final : public ObservableWithBuckets {
         public:
             void NotifyA(int value) {
                 ExecuteNotification([&](NotificationContext& notification) {

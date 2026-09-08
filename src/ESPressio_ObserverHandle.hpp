@@ -14,7 +14,18 @@ namespace ESPressio {
 
         /// <summary>RAII registration handle that safely disconnects an observer from its Observable.</summary>
         /// <remarks>The handle tracks Observable lifetime independently so destruction remains safe if the Observable has already been destroyed. Concrete handle storage is supplied by ESPressio System polymorphic memory ownership.</remarks>
-        class ObserverHandle : public IObserverHandle {
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 4 bytes [0 bytes dynamic allocation]
+ * Members:
+ * - _lifetimeControl (std::shared_ptr<Detail::ObservableLifetimeControl>): 8 bytes [shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * - _observer (std::atomic<IObserver*>): 4 bytes [0 bytes dynamic allocation]
+ * Total Memory: 16 bytes [_lifetimeControl: shared control block (~12+ bytes) and, when owning separately, object 9 bytes known members + sizeof(std::mutex) + sizeof(std::condition_variable)]
+ * Basis: ESP32/Xtensa ILP32 reference ABI; GNU libstdc++ container control-block sizes are implementation-sensitive.
+ * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
+ * End ESPressio Memory Audit
+ */
+class ObserverHandle : public IObserverHandle {
             private:
                 friend class Observable;
                 friend class ObservableWithBuckets;
