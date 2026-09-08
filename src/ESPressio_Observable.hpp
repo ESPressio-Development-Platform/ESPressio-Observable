@@ -20,25 +20,25 @@ namespace Detail {
     template<typename TObserver, typename... TInterfaces>
     struct AllObserverInterfacesConvertible;
 
-        /**
-     * ESPressio Memory Audit
-     * Inherited Memory Total: 1 bytes [0 bytes dynamic allocation]
-     * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
-     * Total Memory: 1 bytes [0 bytes dynamic allocation]
-     * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
-     * End ESPressio Memory Audit
-     */
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 1 bytes [0 bytes dynamic allocation]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 1 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
+ * End ESPressio Memory Audit
+ */
 template<typename TObserver>
     struct AllObserverInterfacesConvertible<TObserver> : std::true_type {};
 
-        /**
-     * ESPressio Memory Audit
-     * Inherited Memory Total: 4 bytes [0 bytes dynamic allocation]
-     * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
-     * Total Memory: 4 bytes [0 bytes dynamic allocation]
-     * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
-     * End ESPressio Memory Audit
-     */
+/**
+ * ESPressio Memory Audit
+ * Inherited Memory Total: 4 bytes [0 bytes dynamic allocation]
+ * Members: none (standalone empty object occupies 1 byte; an eligible empty base may be optimized to 0 bytes).
+ * Total Memory: 4 bytes [0 bytes dynamic allocation]
+ * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
+ * End ESPressio Memory Audit
+ */
 template<typename TObserver, typename TInterface, typename... TRest>
     struct AllObserverInterfacesConvertible<TObserver, TInterface, TRest...>
         : std::integral_constant<
