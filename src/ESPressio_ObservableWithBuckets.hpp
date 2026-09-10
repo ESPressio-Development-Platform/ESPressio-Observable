@@ -17,31 +17,10 @@ namespace Observable {
 
 /// <summary>Provides RTTI-free typed observer registration and dispatch using interface buckets.</summary>
 /// <remarks>Registrations are keyed by the exact interface set supplied at registration time. Conflicting duplicate registrations are rejected.</remarks>
-/**
- * ESPressio Memory Audit
- * Inherited Memory Total: 20 bytes [IObservable: enable_shared_from_this: embedded weak_ptr shares a control block when activated; IObservable: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; IObservable: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; IObservable: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
- * Members:
- * - _registrations (RegistrationStorage): 12 bytes [Capacity * (12 bytes) element storage]
- * - _bindings (BindingStorage): 12 bytes [Capacity * (12 bytes) element storage]
- * - _notificationDepth (std::size_t): 4 bytes [0 bytes dynamic allocation]
- * - _needsCompaction (bool): 1 bytes [0 bytes dynamic allocation]
- * Total Memory: 52 bytes [IObservable: enable_shared_from_this: embedded weak_ptr shares a control block when activated; IObservable: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; IObservable: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; IObservable: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources; _registrations: Capacity * (12 bytes) element storage; _bindings: Capacity * (12 bytes) element storage]
- * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
- * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
- * End ESPressio Memory Audit
- */
+
 class ObservableWithBuckets : public IObservable {
 private:
-/**
- * ESPressio Memory Audit
- * Members:
- * - Handle (IObserverHandle*): 4 bytes [0 bytes dynamic allocation]
- * - Observer (IObserver*): 4 bytes [0 bytes dynamic allocation]
- * - Identity (void*): 4 bytes [0 bytes dynamic allocation]
- * Total Memory: 12 bytes [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
- * End ESPressio Memory Audit
- */
+
 struct Registration {
         IObserverHandle* Handle;
         IObserver* Observer;
@@ -50,16 +29,7 @@ struct Registration {
             : Handle(handle), Observer(observer), Identity(identity) {}
     };
 
-/**
- * ESPressio Memory Audit
- * Members:
- * - Handle (IObserverHandle*): 4 bytes [0 bytes dynamic allocation]
- * - Type (ObserverTypeKey): 4 bytes [0 bytes dynamic allocation]
- * - Interface (void*): 4 bytes [0 bytes dynamic allocation]
- * Total Memory: 12 bytes [0 bytes dynamic allocation]
- * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
- * End ESPressio Memory Audit
- */
+
 struct Binding {
         IObserverHandle* Handle;
         ObserverTypeKey Type;
@@ -231,16 +201,7 @@ struct Binding {
 
 protected:
     /// <summary>Provides typed access to observers participating in one bucketed notification.</summary>
-/**
- * ESPressio Memory Audit
- * Members:
- * - _observable (ObservableWithBuckets&): 4 bytes [0 bytes dynamic allocation]
- * - _notificationLifetime (std::shared_ptr<IObservable>): 8 bytes [shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; pointee: enable_shared_from_this: embedded weak_ptr shares a control block when activated; pointee: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; pointee: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; pointee: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
- * Total Memory: 12 bytes [_notificationLifetime: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; _notificationLifetime: pointee: enable_shared_from_this: embedded weak_ptr shares a control block when activated; _notificationLifetime: pointee: _lifetimeControl: shared control block (~12+ bytes; allocate_shared may co-locate object) + object 20 bytes; _notificationLifetime: pointee: _lifetimeControl: pointee: _mutex: native synchronization state may allocate platform resources lazily; _notificationLifetime: pointee: _lifetimeControl: pointee: _condition: native condition-variable state may allocate platform synchronization resources]
- * Basis: ESP32/Xtensa ILP32 reference ABI (4-byte pointers/size_t); ESPressio stateful allocators/deleters included; ABI-sensitive STL/platform internals are identified explicitly.
- * Confidence: medium; compile-time sizeof on the concrete target remains authoritative for ABI-sensitive/opaque members.
- * End ESPressio Memory Audit
- */
+
 class NotificationContext {
         friend class ObservableWithBuckets;
         ObservableWithBuckets& _observable;
