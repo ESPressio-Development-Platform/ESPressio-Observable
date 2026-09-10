@@ -1,9 +1,0 @@
-name: Temporary Release Flattening
-on:
-  push:
-    branches: [primitives_redesign]
-permissions:
-  contents: write
-jobs:
-  flatten:
-    uses: ESPressio-Development-Platform/ESPressio-Event/.github/workflows/primitives-redesign-release-flatten-reusable.yml@primitives_redesign

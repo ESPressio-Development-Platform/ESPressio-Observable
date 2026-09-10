@@ -6,7 +6,7 @@ ESPressio Observable is appropriate when a producer must notify one or more inde
 
 ## Release candidate
 
-This working branch is being prepared for **4.0.0**. The major-version change reflects the new RTTI-free typed observer registry and the wider platform consolidation. Do not use the old 3.x documentation as an API guide for this branch.
+This working branch is being prepared for **4.0.0**. The major-version change reflects the new RTTI-free typed observer registry and the wider platform consolidation. Do not use the old documentation as an API guide for this branch.
 
 ## Key properties
 
@@ -18,7 +18,7 @@ This working branch is being prepared for **4.0.0**. The major-version change re
 - Typed dispatch without `dynamic_cast` or C++ RTTI.
 - ESPressio-System memory policies for registration storage.
 
-**RTTI is not required.** Do not add `-frtti` or remove `-fno-rtti` for ESPressio Observable 4.x.
+**RTTI is not required.** Do not add `-frtti` or remove `-fno-rtti` for ESPressio Observable.
 
 ## Dependency
 
@@ -41,7 +41,7 @@ Suppose a thermometer synchronously reports changes to interested application co
 ```cpp
 #include <ESPressio_IObserver.hpp>
 
-class ITemperatureObserver :
+class ITemperatureObserver:
     public virtual ESPressio::Observable::IObserver {
 public:
     virtual ~ITemperatureObserver() = default;
@@ -54,7 +54,7 @@ public:
 ```cpp
 #include <ESPressio_Observable.hpp>
 
-class Thermometer final : public ESPressio::Observable::Observable {
+class Thermometer final: public ESPressio::Observable::Observable {
 public:
     void SetTemperature(float value) {
         if (value == _temperature) return;
@@ -79,7 +79,7 @@ private:
 ### 3. Register the interface you intend to notify
 
 ```cpp
-class TemperatureLogger final : public ITemperatureObserver {
+class TemperatureLogger final: public ITemperatureObserver {
 public:
     void OnTemperatureChanged(float previous, float current) override {
         // Log, update a display, collect diagnostics, etc.
@@ -161,9 +161,9 @@ Use `ThreadSafeObservable` when registration, unregistration, or notification ca
 ```cpp
 #include <ESPressio_ThreadSafeObservable.hpp>
 
-class ConnectionMonitor final :
+class ConnectionMonitor final:
     public ESPressio::Observable::ThreadSafeObservable {
-    // ...
+    //...
 };
 ```
 
