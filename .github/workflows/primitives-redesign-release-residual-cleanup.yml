@@ -1,9 +1,0 @@
-name: Temporary Residual Release-History Cleanup
-on:
-  push:
-    branches: [primitives_redesign]
-permissions:
-  contents: write
-jobs:
-  cleanup:
-    uses: ESPressio-Development-Platform/ESPressio-Event/.github/workflows/primitives-redesign-release-residual-cleanup-reusable.yml@primitives_redesign

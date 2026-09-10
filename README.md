@@ -4,9 +4,9 @@ Synchronous, typed Observer Pattern infrastructure for the ESPressio Development
 
 ESPressio Observable is appropriate when a producer must notify one or more independent consumers **during the same operation**. It deliberately does not introduce a queue, worker, scheduler, or asynchronous boundary. For asynchronously scheduled work, use ESPressio Event instead.
 
-## Release candidate
+## Active working branch
 
-This working branch is being prepared for **4.0.0**. The major-version change reflects the new RTTI-free typed observer registry and the wider platform consolidation. Do not use the old documentation as an API guide for this branch.
+This working branch contains the RTTI-free typed observer registry and wider platform consolidation. Its documentation describes the current working API.
 
 ## Key properties
 
@@ -22,7 +22,7 @@ This working branch is being prepared for **4.0.0**. The major-version change re
 
 ## Dependency
 
-Observable depends on ESPressio-System for allocator-aware storage. During the coordinated release-candidate phase the working branches are used together; published 4.0.0 metadata will target the corresponding released System generation.
+Observable depends on ESPressio-System for allocator-aware storage. During coordinated development, the matching working branches are used together.
 
 PlatformIO working-branch example:
 
